@@ -198,12 +198,12 @@ const UsuariosAdmin = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center mb-6">
-          <a href="/gerencia" className="flex items-center text-purple-600 hover:text-purple-800 transition-colors">
+          <Link to="/gerencia" className="flex items-center text-purple-600 hover:text-purple-800 transition-colors">
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Volver al Panel
-          </a>
+          </Link>
         </div>
         <h1 className="text-2xl font-bold text-gray-800 mb-8">Gestión de Usuarios</h1>
 
@@ -378,12 +378,12 @@ const EmergenciasAdmin = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center mb-6">
-          <a href="/gerencia" className="flex items-center text-purple-600 hover:text-purple-800 transition-colors">
+          <Link to="/gerencia" className="flex items-center text-purple-600 hover:text-purple-800 transition-colors">
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Volver al Panel
-          </a>
+          </Link>
         </div>
         <h1 className="text-2xl font-bold text-gray-800 mb-8">Gestión de Emergencias</h1>
 
@@ -586,12 +586,12 @@ const EvaluacionesAdmin = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center mb-6">
-          <a href="/gerencia" className="flex items-center text-purple-600 hover:text-purple-800 transition-colors">
+          <Link to="/gerencia" className="flex items-center text-purple-600 hover:text-purple-800 transition-colors">
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Volver al Panel
-          </a>
+          </Link>
         </div>
         <h1 className="text-2xl font-bold text-gray-800 mb-8">Todas las Evaluaciones</h1>
 
@@ -773,12 +773,12 @@ const NovedadesAdmin = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center mb-6">
-          <a href="/gerencia" className="flex items-center text-purple-600 hover:text-purple-800 transition-colors">
+          <Link to="/gerencia" className="flex items-center text-purple-600 hover:text-purple-800 transition-colors">
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Volver al Panel
-          </a>
+          </Link>
         </div>
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-gray-800">Gestión de Novedades</h1>
