@@ -1,10 +1,17 @@
--- E-Migrante Database Schema for Supabase (PostgreSQL)
+-- E-Migrante Database Setup - Copia todo esto y pégalo en SQL Editor de Supabase
 
--- Enable UUID extension
+-- 1. CREAR EXTENSIÓN UUID
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Table: usuarios
-CREATE TABLE IF NOT EXISTS usuarios (
+-- 2. CREAR TABLAS
+DROP TABLE IF EXISTS usuarios CASCADE;
+DROP TABLE IF EXISTS entidades CASCADE;
+DROP TABLE IF EXISTS servicios_entidad CASCADE;
+DROP TABLE IF EXISTS emergencias CASCADE;
+DROP TABLE IF EXISTS calificaciones CASCADE;
+DROP TABLE IF EXISTS novedades CASCADE;
+
+CREATE TABLE usuarios (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     nombre TEXT NOT NULL,
     email TEXT NOT NULL,
@@ -13,8 +20,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
--- Table: entidades
-CREATE TABLE IF NOT EXISTS entidades (
+CREATE TABLE entidades (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     usuario_id UUID REFERENCES usuarios(id) ON DELETE SET NULL,
     nombre TEXT NOT NULL,
@@ -28,8 +34,7 @@ CREATE TABLE IF NOT EXISTS entidades (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
--- Table: servicios_entidad
-CREATE TABLE IF NOT EXISTS servicios_entidad (
+CREATE TABLE servicios_entidad (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     entidad_id UUID REFERENCES entidades(id) ON DELETE CASCADE,
     nombre TEXT NOT NULL,
@@ -40,8 +45,7 @@ CREATE TABLE IF NOT EXISTS servicios_entidad (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
--- Table: emergencias
-CREATE TABLE IF NOT EXISTS emergencias (
+CREATE TABLE emergencias (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     usuario_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
     entidad_id UUID REFERENCES entidades(id) ON DELETE SET NULL,
@@ -57,8 +61,7 @@ CREATE TABLE IF NOT EXISTS emergencias (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
--- Table: calificaciones
-CREATE TABLE IF NOT EXISTS calificaciones (
+CREATE TABLE calificaciones (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     entidad_id UUID REFERENCES entidades(id) ON DELETE CASCADE,
     usuario_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -68,8 +71,7 @@ CREATE TABLE IF NOT EXISTS calificaciones (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
--- Table: novedades
-CREATE TABLE IF NOT EXISTS novedades (
+CREATE TABLE novedades (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     titulo TEXT NOT NULL,
     contenido TEXT NOT NULL,
@@ -79,7 +81,7 @@ CREATE TABLE IF NOT EXISTS novedades (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
--- Enable Row Level Security (RLS)
+-- 3. HABILITAR RLS
 ALTER TABLE usuarios ENABLE ROW LEVEL SECURITY;
 ALTER TABLE entidades ENABLE ROW LEVEL SECURITY;
 ALTER TABLE servicios_entidad ENABLE ROW LEVEL SECURITY;
@@ -87,23 +89,20 @@ ALTER TABLE emergencias ENABLE ROW LEVEL SECURITY;
 ALTER TABLE calificaciones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE novedades ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies for usuarios
+-- 4. POLÍTICAS RLS
 CREATE POLICY "Users can view all usuarios" ON usuarios FOR SELECT USING (true);
 CREATE POLICY "Users can insert their own data" ON usuarios FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can update own data" ON usuarios FOR UPDATE USING (auth.uid() = id);
 
--- RLS Policies for entidades
 CREATE POLICY "Anyone can view enabled entidades" ON entidades FOR SELECT USING (habilitado = true);
 CREATE POLICY "Entidades can insert own data" ON entidades FOR INSERT WITH CHECK (auth.uid() = usuario_id);
 CREATE POLICY "Entidades can update own data" ON entidades FOR UPDATE USING (auth.uid() = usuario_id);
 
--- RLS Policies for servicios_entidad
 CREATE POLICY "Anyone can view enabled servicios" ON servicios_entidad FOR SELECT USING (habilitado = true);
 CREATE POLICY "Entidades can manage own servicios" ON servicios_entidad FOR ALL USING (
     EXISTS (SELECT 1 FROM entidades WHERE id = servicios_entidad.entidad_id AND usuario_id = auth.uid())
 );
 
--- RLS Policies for emergencias
 CREATE POLICY "Users can view own emergencias" ON emergencias FOR SELECT USING (auth.uid() = usuario_id);
 CREATE POLICY "Entidades can view all emergencias" ON emergencias FOR SELECT USING (
     EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND tipo = 'ENTIDAD')
@@ -119,16 +118,10 @@ CREATE POLICY "Gerencia can manage all emergencias" ON emergencias FOR ALL USING
     EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND tipo = 'GERENCIA')
 );
 
--- RLS Policies for calificaciones
--- Users can view their own calificaciones
-CREATE POLICY "Users can view own calificaciones" ON calificaciones FOR SELECT USING (
-    auth.uid() = usuario_id
-);
--- Entidades can view calificaciones for their entity
+CREATE POLICY "Users can view own calificaciones" ON calificaciones FOR SELECT USING (auth.uid() = usuario_id);
 CREATE POLICY "Entidades can view their calificaciones" ON calificaciones FOR SELECT USING (
     EXISTS (SELECT 1 FROM entidades WHERE id = calificaciones.entidad_id AND usuario_id = auth.uid())
 );
--- Gerencia can view all calificaciones
 CREATE POLICY "Gerencia can view all calificaciones" ON calificaciones FOR SELECT USING (
     EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND tipo = 'GERENCIA')
 );
@@ -137,13 +130,12 @@ CREATE POLICY "Gerencia can manage all calificaciones" ON calificaciones FOR ALL
     EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND tipo = 'GERENCIA')
 );
 
--- RLS Policies for novedades
 CREATE POLICY "Anyone can view active novedades" ON novedades FOR SELECT USING (activa = true);
 CREATE POLICY "Gerencia can manage novedades" ON novedades FOR ALL USING (
     EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND tipo = 'GERENCIA')
 );
 
--- Function to automatically create usuario record on signup
+-- 5. FUNCIÓN Y TRIGGER PARA CREAR PERFIL AUTOMÁTICAMENTE
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -158,15 +150,68 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Trigger to call function on user creation
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- Create indexes for better performance
+-- 6. CREAR ÍNDICES
 CREATE INDEX IF NOT EXISTS idx_entidades_tipo ON entidades(tipo);
 CREATE INDEX IF NOT EXISTS idx_emergencias_usuario ON emergencias(usuario_id);
 CREATE INDEX IF NOT EXISTS idx_emergencias_estado ON emergencias(estado);
 CREATE INDEX IF NOT EXISTS idx_calificaciones_entidad ON calificaciones(entidad_id);
 CREATE INDEX IF NOT EXISTS idx_calificaciones_usuario ON calificaciones(usuario_id);
+
+-- 7. INSERTAR DATOS DE PRUEBA (ENTIDADES)
+INSERT INTO entidades (id, usuario_id, nombre, descripcion, tipo, direccion, telefono, email, habilitado) VALUES
+('11111111-1111-1111-1111-111111111111', NULL, 'Hospital Central', 'Hospital público con atención de urgencias para migrantes', 'SALUD', 'Carrera 10 #15-20', '555-0101', 'hospital@ejemplo.com', true),
+('22222222-2222-2222-2222-222222222222', NULL, 'Universidad Nacional', 'Programas de integración educativa para migrantes', 'EDUCACION', 'Calle 45 #10-25', '555-0202', 'universidad@ejemplo.com', true),
+('33333333-3333-3333-3333-333333333333', NULL, 'Consultoría Legal Migratoria', 'Asesoría legal en trámites de migración', 'LEGAL', 'Carrera 7 #50-15', '555-0303', 'legal@ejemplo.com', true),
+('44444444-4444-4444-4444-444444444444', NULL, 'Fundación Esperanza', 'Albergue temporal y alimentación para migrantes', 'VIVIENDA', 'Calle 30 #5-40', '555-0404', 'fundacion@ejemplo.com', true),
+('55555555-5555-5555-5555-555555555555', NULL, 'Agencia de Empleo Migrante', 'Conexión laboral para migrantes', 'EMPLEO', 'Carrera 15 #20-30', '555-0505', 'empleo@ejemplo.com', true),
+('66666666-6666-6666-6666-666666666666', NULL, 'Banco de Alimentos', 'Distribución de alimentos a población migrante', 'ALIMENTACION', 'Calle 60 #10-10', '555-0606', 'alimentos@ejemplo.com', true),
+('77777777-7777-7777-7777-777777777777', NULL, 'Centro de Atención Integral', 'Servicios múltiples para migrantes', 'OTROS', 'Carrera 5 #15-50', '555-0707', 'centro@ejemplo.com', true);
+
+-- 8. INSERTAR SERVICIOS DE ENTIDADES
+INSERT INTO servicios_entidad (entidad_id, nombre, descripcion, tipo, habilitado) VALUES
+('11111111-1111-1111-1111-111111111111', 'Urgencias 24 horas', 'Atención de urgencias médicas', 'SALUD', true),
+('11111111-1111-1111-1111-111111111111', 'Consultas generales', 'Medicina general y especialidades', 'SALUD', true),
+('22222222-2222-2222-2222-222222222222', 'Cursos de español', 'Clases de español para migrantes', 'EDUCACION', true),
+('22222222-2222-2222-2222-222222222222', 'Validación de estudios', 'Proceso de validación de títulos', 'EDUCACION', true),
+('33333333-3333-3333-3333-333333333333', 'Trámite de visa', 'Asesoría para visa de protección', 'LEGAL', true),
+('33333333-3333-3333-3333-333333333333', 'Regularización', 'Proceso de regularización migratoria', 'LEGAL', true),
+('44444444-4444-4444-4444-444444444444', 'Albergue temporal', 'Alojamiento temporal hasta 30 días', 'VIVIENDA', true),
+('44444444-4444-4444-4444-444444444444', 'Asesoría habitacional', 'Orientación para vivienda permanente', 'VIVIENDA', true),
+('55555555-5555-5555-5555-555555555555', 'Bolsa de empleo', 'Publicación de ofertas laborales', 'EMPLEO', true),
+('55555555-5555-5555-5555-555555555555', 'Capacitación laboral', 'Talleres de habilidades laborales', 'EMPLEO', true);
+
+-- 9. INSERTAR NOVEDADES
+INSERT INTO novedades (titulo, contenido, tipo, activa) VALUES
+('Registro para Permiso Temporal de Permanencia', 'Se abre el período de registro para el nuevo PPT. Acude a las entidades legales para más información.', 'INFORMACION', true),
+('Alerta: Servicios de Salud para Migrantes', 'Recordamos que los servicios de urgencias están disponibles para todos los migrantes.', 'ALERTA', true),
+('Feria de Empleo Migrante', 'Próximamente se realizará una feria de empleo para migrantes. Inscríbete en la agencia de empleo.', 'EVENTO', true),
+('Nuevos Cursos de Español', 'Inscríbete en los nuevos ciclos de cursos de español para migrantes.', 'INFORMACION', true);
+
+-- 10. CREAR PERFILES PARA USUARIOS EXISTENTES (SI LOS HAY)
+-- Esta parte crea perfiles para usuarios que ya se registraron antes del trigger
+DO $$
+DECLARE
+    u RECORD;
+BEGIN
+    FOR u IN SELECT * FROM auth.users WHERE NOT EXISTS (SELECT 1 FROM public.usuarios WHERE id = auth.users.id) LOOP
+        INSERT INTO public.usuarios (id, nombre, email, tipo)
+        VALUES (
+            u.id,
+            COALESCE(u.raw_user_meta_data->>'nombre', u.email),
+            u.email,
+            COALESCE(u.raw_user_meta_data->>'tipo', 'MIGRANTE')
+        );
+    END LOOP;
+END $$;
+
+-- VERIFICAR
+SELECT 'Usuarios creados:' AS mensaje, COUNT(*) AS total FROM public.usuarios;
+SELECT 'Entidades creadas:' AS mensaje, COUNT(*) AS total FROM entidades;
+SELECT 'Novedades creadas:' AS mensaje, COUNT(*) AS total FROM novedades;
+
+-- Fin del script

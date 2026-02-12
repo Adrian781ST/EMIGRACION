@@ -30,10 +30,13 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">🔐</span>
+            </div>
             <h1 className="text-3xl font-bold text-gray-800">Iniciar Sesión</h1>
             <p className="text-gray-600 mt-2">
               Accede a tu cuenta de E-Migrante
@@ -74,7 +77,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
             >
               {loading ? (
                 <span className="flex items-center justify-center">
@@ -97,15 +100,6 @@ const Login = () => {
                 Regístrate
               </Link>
             </p>
-          </div>
-
-          <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800 font-medium mb-2">Cuentas de prueba:</p>
-            <div className="text-sm text-blue-700 space-y-1">
-              <p>• Migrante: migrate@test.com / test1234</p>
-              <p>• Entidad: entidad@test.com / test1234</p>
-              <p>• Gerencia: gerencia@test.com / test1234</p>
-            </div>
           </div>
         </div>
       </div>

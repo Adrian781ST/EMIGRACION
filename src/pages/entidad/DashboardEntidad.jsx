@@ -1,15 +1,148 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
 
+// Componente para mostrar Novedades en Entidad
+const NovedadesEntidad = () => {
+  const [novedades, setNovedades] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchNovedades()
+  }, [])
+
+  const fetchNovedades = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('novedades')
+        .select('*')
+        .eq('activa', true)
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      if (error) throw error
+      setNovedades(data || [])
+    } catch (error) {
+      console.error('Error fetching novedades:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-md p-6 animate-pulse">
+        <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+        <div className="space-y-3">
+          <div className="h-20 bg-gray-200 rounded"></div>
+          <div className="h-20 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-white rounded-xl shadow-md p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold text-gray-800">📋 Novedades</h2>
+        <span className="text-gray-500 text-sm">Noticias importantes</span>
+      </div>
+      
+      {novedades.length === 0 ? (
+        <p className="text-gray-600 text-center py-4">No hay novedades recientes</p>
+      ) : (
+        <div className="space-y-3">
+          {novedades.map(novedad => (
+            <div key={novedad.id} className={`p-4 rounded-lg border-l-4 ${
+              novedad.tipo === 'ALERTA' ? 'bg-red-50 border-red-500' :
+              novedad.tipo === 'EVENTO' ? 'bg-green-50 border-green-500' :
+              'bg-blue-50 border-blue-500'
+            }`}>
+              <div className="flex items-center space-x-2 mb-1">
+                <span className={`text-xs font-medium px-2 py-0.5 rounded ${
+                  novedad.tipo === 'ALERTA' ? 'bg-red-100 text-red-800' :
+                  novedad.tipo === 'EVENTO' ? 'bg-green-100 text-green-800' :
+                  'bg-blue-100 text-blue-800'
+                }`}>
+                  {novedad.tipo}
+                </span>
+              </div>
+              <h3 className="font-medium text-gray-800">{novedad.titulo}</h3>
+              <p className="text-gray-600 text-sm mt-1">{novedad.contenido}</p>
+              <p className="text-gray-500 text-xs mt-2">
+                {new Date(novedad.created_at).toLocaleDateString()}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 const DashboardEntidad = () => {
   const { userProfile } = useAuth()
 
+  const getSectorLabel = (tipo) => {
+    const labels = {
+      'SALUD': 'Salud',
+      'EDUCACION': 'Educación',
+      'LEGAL': 'Asesoría Legal',
+      'VIVIENDA': 'Vivienda',
+      'EMPLEO': 'Empleo',
+      'ALIMENTACION': 'Alimentación',
+      'OTROS': 'Otros Servicios'
+    }
+    return labels[tipo] || tipo
+  }
+
+  const getSectorIcon = (tipo) => {
+    const icons = {
+      'SALUD': '🏥',
+      'EDUCACION': '📚',
+      'LEGAL': '⚖️',
+      'VIVIENDA': '🏠',
+      'EMPLEO': '💼',
+      'ALIMENTACION': '🍽️',
+      'OTROS': '📋'
+    }
+    return icons[tipo] || '📋'
+  }
+
+  const getSectorColor = (tipo) => {
+    const colors = {
+      'SALUD': 'from-red-500 to-red-600',
+      'EDUCACION': 'from-blue-500 to-blue-600',
+      'LEGAL': 'from-gray-500 to-gray-600',
+      'VIVIENDA': 'from-orange-500 to-orange-600',
+      'EMPLEO': 'from-green-500 to-green-600',
+      'ALIMENTACION': 'from-yellow-500 to-yellow-600',
+      'OTROS': 'from-purple-500 to-purple-600'
+    }
+    return colors[tipo] || 'from-gray-500 to-gray-600'
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-green-600 text-white py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+      {/* Sector Banner */}
+      {userProfile?.tipo && (
+        <div className={`bg-gradient-to-r ${getSectorColor(userProfile.tipo)} text-white py-6 shadow-lg`}>
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-4xl">
+                {getSectorIcon(userProfile.tipo)}
+              </div>
+              <div>
+                <p className="text-white/80 text-sm uppercase tracking-wide">Tu sector</p>
+                <h2 className="text-2xl font-bold">{getSectorLabel(userProfile.tipo)}</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-gradient-to-r from-green-600 via-green-500 to-teal-600 text-white py-8 shadow-lg">
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-3xl font-bold">
             Panel de {userProfile?.nombre || 'Entidad'}
@@ -69,6 +202,23 @@ const DashboardEntidad = () => {
               </div>
             </div>
           </Link>
+
+          <Link to="novedades" className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center">
+                <span className="text-2xl">📋</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">Novedades</h3>
+                <p className="text-gray-600 text-sm">Ver noticias</p>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Novedades Section */}
+        <div className="mb-8">
+          <NovedadesEntidad />
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-6">
@@ -94,9 +244,12 @@ const DashboardEntidad = () => {
 }
 
 const EmergenciasEntidad = () => {
-  const { userProfile } = useAuth()
+  const { userProfile, user } = useAuth()
   const [emergencias, setEmergencias] = useState([])
   const [loading, setLoading] = useState(true)
+  const [selectedEmergencia, setSelectedEmergencia] = useState(null)
+  const [showDetailModal, setShowDetailModal] = useState(false)
+  const [seguimiento, setSeguimiento] = useState('')
 
   useEffect(() => {
     fetchEmergencias()
@@ -104,14 +257,31 @@ const EmergenciasEntidad = () => {
 
   const fetchEmergencias = async () => {
     try {
-      const { data, error } = await supabase
-        .from('emergencias')
-        .select('*, usuarios(nombre, email)')
-        .eq('estado', 'PENDIENTE')
-        .order('created_at', { ascending: false })
+      // Get entity ID from entidades table
+      const { data: entidadData, error: entidadError } = await supabase
+        .from('entidades')
+        .select('id')
+        .eq('usuario_id', user.id)
+        .single()
 
-      if (error) throw error
-      setEmergencias(data || [])
+      if (entidadError && entidadError.code !== 'PGRST116') {
+        throw entidadError
+      }
+
+      if (entidadData) {
+        // Fetch assigned emergencias
+        const { data, error } = await supabase
+          .from('emergencias')
+          .select('*, usuarios(nombre, email)')
+          .eq('entidad_id', entidadData.id)
+          .eq('estado', 'ASIGNADA')
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+        setEmergencias(data || [])
+      } else {
+        setEmergencias([])
+      }
     } catch (error) {
       console.error('Error fetching emergencias:', error)
     } finally {
@@ -123,7 +293,10 @@ const EmergenciasEntidad = () => {
     try {
       const { error } = await supabase
         .from('emergencias')
-        .update({ estado: 'ATENDIDA' })
+        .update({ 
+          estado: 'ATENDIDA',
+          fecha_atencion: new Date().toISOString()
+        })
         .eq('id', id)
 
       if (error) throw error
@@ -135,35 +308,104 @@ const EmergenciasEntidad = () => {
     }
   }
 
+  const handleActualizarSeguimiento = async (e) => {
+    e.preventDefault()
+    try {
+      const { error } = await supabase
+        .from('emergencias')
+        .update({ seguimiento })
+        .eq('id', selectedEmergencia.id)
+
+      if (error) throw error
+
+      toast.success('Seguimiento actualizado')
+      setShowDetailModal(false)
+      setSelectedEmergencia(null)
+      setSeguimiento('')
+      fetchEmergencias()
+    } catch (error) {
+      toast.error(error.message || 'Error al actualizar seguimiento')
+    }
+  }
+
+  const openDetailModal = (emergencia) => {
+    setSelectedEmergencia(emergencia)
+    setSeguimiento(emergencia.seguimiento || '')
+    setShowDetailModal(true)
+  }
+
+  const getEstadoColor = (estado) => {
+    const colors = {
+      'PENDIENTE': 'bg-yellow-100 text-yellow-800',
+      'ASIGNADA': 'bg-blue-100 text-blue-800',
+      'ATENDIDA': 'bg-green-100 text-green-800',
+      'CANCELADA': 'bg-red-100 text-red-800'
+    }
+    return colors[estado] || 'bg-gray-100 text-gray-800'
+  }
+
+  const getPrioridadColor = (prioridad) => {
+    const colors = {
+      'BAJA': 'bg-gray-100 text-gray-800',
+      'NORMAL': 'bg-blue-100 text-blue-800',
+      'ALTA': 'bg-orange-100 text-orange-800',
+      'URGENTE': 'bg-red-100 text-red-800'
+    }
+    return colors[prioridad] || 'bg-gray-100 text-gray-800'
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-2xl font-bold text-gray-800 mb-8">Emergencias Pendientes</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-8">Emergencias Asignadas</h1>
+        
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="bg-white rounded-xl shadow-md p-4">
+            <p className="text-gray-600 text-sm">Asignadas</p>
+            <p className="text-2xl font-bold text-blue-600">{emergencias.length}</p>
+          </div>
+          <div className="bg-white rounded-xl shadow-md p-4">
+            <p className="text-gray-600 text-sm">Urgentes</p>
+            <p className="text-2xl font-bold text-red-600">
+              {emergencias.filter(e => e.prioridad === 'URGENTE').length}
+            </p>
+          </div>
+          <div className="bg-white rounded-xl shadow-md p-4">
+            <p className="text-gray-600 text-sm">Con Seguimiento</p>
+            <p className="text-2xl font-bold text-green-600">
+              {emergencias.filter(e => e.seguimiento).length}
+            </p>
+          </div>
+        </div>
 
         {emergencias.length === 0 ? (
           <div className="bg-white rounded-xl shadow-md p-8 text-center">
-            <p className="text-gray-600">No hay emergencias pendientes en este momento.</p>
+            <p className="text-gray-600">No tienes emergencias asignadas.</p>
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="space-y-4">
             {emergencias.map(emergencia => (
               <div key={emergencia.id} className="bg-white rounded-xl shadow-md p-6">
                 <div className="flex justify-between items-start">
-                  <div>
+                  <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
                       <span className="bg-red-100 text-red-800 text-sm font-medium px-2 py-0.5 rounded">
                         {emergencia.tipo}
                       </span>
-                      <span className="bg-yellow-100 text-yellow-800 text-sm font-medium px-2 py-0.5 rounded">
+                      <span className={`text-sm font-medium px-2 py-0.5 rounded ${getEstadoColor(emergencia.estado)}`}>
                         {emergencia.estado}
+                      </span>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded ${getPrioridadColor(emergencia.prioridad)}`}>
+                        {emergencia.prioridad}
                       </span>
                     </div>
                     <p className="text-gray-800">{emergencia.descripcion}</p>
@@ -175,22 +417,76 @@ const EmergenciasEntidad = () => {
                       <p className="font-medium">{emergencia.usuarios?.nombre}</p>
                       <p className="text-sm text-gray-500">{emergencia.usuarios?.email}</p>
                     </div>
+                    {emergencia.seguimiento && (
+                      <div className="mt-3 p-3 bg-yellow-50 rounded-lg">
+                        <p className="text-sm text-gray-600">Seguimiento:</p>
+                        <p className="text-gray-800">{emergencia.seguimiento}</p>
+                      </div>
+                    )}
                     <p className="text-gray-500 text-sm mt-2">
-                      Reportada el {new Date(emergencia.created_at).toLocaleDateString()}
+                      Asignada: {new Date(emergencia.fecha_asignacion || emergencia.created_at).toLocaleString()}
                     </p>
                   </div>
-                  <button
-                    onClick={() => handleAtender(emergencia.id)}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-                  >
-                    Atendida
-                  </button>
+                  <div className="flex space-x-2 ml-4">
+                    <button
+                      onClick={() => openDetailModal(emergencia)}
+                      className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm"
+                    >
+                      Seguimiento
+                    </button>
+                    <button
+                      onClick={() => handleAtender(emergencia.id)}
+                      className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 text-sm"
+                    >
+                      Atendida
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Detail Modal */}
+      {showDetailModal && selectedEmergencia && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Actualizar Seguimiento</h2>
+            <div className="mb-4">
+              <p className="text-sm text-gray-600">Emergencia:</p>
+              <p className="font-medium">{selectedEmergencia.descripcion}</p>
+            </div>
+            <form onSubmit={handleActualizarSeguimiento} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Seguimiento / Notas</label>
+                <textarea
+                  value={seguimiento}
+                  onChange={(e) => setSeguimiento(e.target.value)}
+                  rows={4}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  placeholder="Agregar notas de seguimiento..."
+                />
+              </div>
+              <div className="flex space-x-4">
+                <button
+                  type="button"
+                  onClick={() => setShowDetailModal(false)}
+                  className="flex-1 bg-gray-300 text-gray-800 py-2 rounded-lg hover:bg-gray-400"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                >
+                  Guardar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -258,14 +554,14 @@ const ServiciosEntidad = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-gray-800">Mis Servicios</h1>
@@ -383,7 +679,7 @@ const EvaluacionesEntidad = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
       </div>
     )
@@ -394,7 +690,7 @@ const EvaluacionesEntidad = () => {
     : 'N/A'
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="bg-white rounded-xl shadow-md p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 mb-2">Calificación Promedio</h2>
@@ -433,15 +729,78 @@ const EvaluacionesEntidad = () => {
   )
 }
 
-const EntidadRoutes = () => {
+// Componente para mostrar Novedades (todas)
+const NovedadesPage = () => {
+  const [novedades, setNovedades] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchNovedades()
+  }, [])
+
+  const fetchNovedades = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('novedades')
+        .select('*')
+        .eq('activa', true)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setNovedades(data || [])
+    } catch (error) {
+      console.error('Error fetching novedades:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      </div>
+    )
+  }
+
   return (
-    <Routes>
-      <Route path="/" element={<DashboardEntidad />} />
-      <Route path="emergencias" element={<EmergenciasEntidad />} />
-      <Route path="servicios" element={<ServiciosEntidad />} />
-      <Route path="evaluaciones" element={<EvaluacionesEntidad />} />
-    </Routes>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        <h1 className="text-3xl font-bold text-gray-800 mb-8">📋 Todas las Novedades</h1>
+        
+        {novedades.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-md p-8 text-center">
+            <p className="text-gray-600">No hay novedades disponibles</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {novedades.map(novedad => (
+              <div key={novedad.id} className={`bg-white rounded-xl shadow-md p-6 border-l-4 ${
+                novedad.tipo === 'ALERTA' ? 'border-red-500' :
+                novedad.tipo === 'EVENTO' ? 'border-green-500' :
+                'border-blue-500'
+              }`}>
+                <div className="flex items-center space-x-2 mb-3">
+                  <span className={`text-xs font-medium px-3 py-1 rounded-full ${
+                    novedad.tipo === 'ALERTA' ? 'bg-red-100 text-red-800' :
+                    novedad.tipo === 'EVENTO' ? 'bg-green-100 text-green-800' :
+                    'bg-blue-100 text-blue-800'
+                  }`}>
+                    {novedad.tipo}
+                  </span>
+                  <span className="text-gray-500 text-sm">
+                    {new Date(novedad.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <h2 className="text-xl font-semibold text-gray-800 mb-2">{novedad.titulo}</h2>
+                <p className="text-gray-600">{novedad.contenido}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 
-export default EntidadRoutes
+export { DashboardEntidad as default, EmergenciasEntidad, ServiciosEntidad, EvaluacionesEntidad, NovedadesEntidad }

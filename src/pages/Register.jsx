@@ -32,23 +32,36 @@ const Register = () => {
     const result = await signUp(email, password, nombre, tipo)
 
     if (result.success) {
-      // Create user profile in usuarios table
-      const { error: profileError } = await supabase
-        .from('usuarios')
-        .insert([{
-          id: result.data.user.id,
-          nombre,
-          email,
-          tipo
-        }])
-
-      if (profileError) {
-        console.error('Error creating profile:', profileError)
-        toast.error('Error al crear el perfil')
-      } else {
-        toast.success('¡Cuenta creada exitosamente! Por favor verifica tu correo electrónico.')
-        navigate('/login')
-      }
+      // Wait a moment for the trigger to create the profile, then verify
+      setTimeout(async () => {
+        const { data: profile } = await supabase
+          .from('usuarios')
+          .select('*')
+          .eq('id', result.data.user?.id)
+          .single()
+        
+        if (!profile) {
+          // Manually create profile if trigger didn't work
+          const { error: insertError } = await supabase
+            .from('usuarios')
+            .insert({
+              id: result.data.user?.id,
+              nombre: nombre,
+              email: email,
+              tipo: tipo
+            })
+          
+          if (insertError) {
+            console.error('Error creating profile:', insertError)
+            toast.error('Cuenta creada pero perfil no se pudo crear. Contacta soporte.')
+          } else {
+            toast.success('¡Cuenta creada exitosamente! Perfil creado correctamente.')
+          }
+        } else {
+          toast.success('¡Cuenta creada exitosamente! Por favor verifica tu correo electrónico.')
+        }
+      }, 2000)
+      navigate('/login')
     } else {
       toast.error(result.error || 'Error al registrarse')
     }
@@ -57,13 +70,16 @@ const Register = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">👤</span>
+            </div>
             <h1 className="text-3xl font-bold text-gray-800">Crear Cuenta</h1>
             <p className="text-gray-600 mt-2">
-              Únete a E-Migrante hoy mismo
+              Únete a E-Migrante ya mismo!
             </p>
           </div>
 
@@ -148,7 +164,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
             >
               {loading ? (
                 <span className="flex items-center justify-center">

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import toast from 'react-hot-toast'
 
 const Navbar = () => {
   const { user, userProfile, signOut } = useAuth()
@@ -9,67 +10,105 @@ const Navbar = () => {
 
   const handleSignOut = async () => {
     await signOut()
+    toast.success('¡Hasta pronto! Gracias por visitarnos.')
     navigate('/')
+    setIsMenuOpen(false)
   }
 
-  const getDashboardPath = () => {
-    switch (userProfile?.tipo) {
-      case 'MIGRANTE': return '/migrante'
-      case 'ENTIDAD': return '/entidad'
-      case 'GERENCIA': return '/gerencia'
-      default: return '/perfil'
-    }
+  const handleLinkClick = () => {
+    setIsMenuOpen(false)
   }
+
+  const NavLink = ({ to, children }) => (
+    <Link 
+      to={to} 
+      onClick={handleLinkClick}
+      className="text-white/90 hover:text-white text-sm font-medium uppercase tracking-wide px-3 py-2 rounded-lg hover:bg-white/10 transition-colors duration-200"
+    >
+      {children}
+    </Link>
+  )
 
   return (
-    <nav className="bg-blue-600 shadow-lg">
+    <nav className="bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="text-white text-xl font-bold">E-Migrante</span>
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2 group">
+            <span className="text-2xl font-bold text-white tracking-wider group-hover:scale-105 transition-transform duration-200">
+              E-MIGRANTE
+            </span>
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link to="/entidades" className="text-white hover:text-blue-200">
-              Entidades
-            </Link>
-            <Link to="/evaluanos" className="text-white hover:text-blue-200">
-              Evalúanos
-            </Link>
+          <div className="hidden md:flex items-center space-x-2">
+            {/* Public links - visible for everyone */}
+            <NavLink to="/entidades">ENTIDADES</NavLink>
+            <NavLink to="/evaluanos">EVALUARNOS</NavLink>
             
-            {user ? (
-              <div className="flex items-center space-x-4">
-                <Link 
-                  to={getDashboardPath()} 
-                  className="text-white hover:text-blue-200"
-                >
-                  {userProfile?.tipo === 'GERENCIA' ? 'Gerencia' : 
-                   userProfile?.tipo === 'ENTIDAD' ? 'Mi Entidad' : 'Mi Panel'}
-                </Link>
-                <Link to="/perfil" className="text-white hover:text-blue-200">
-                  Perfil
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-800"
-                >
-                  Cerrar Sesión
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
+            {/* Show user-specific links when logged in */}
+            {user && (
+              <>
+                <div className="border-l border-white/20 h-8 mx-2"></div>
+                
+                {/* Role-based links */}
+                {userProfile?.tipo === 'MIGRANTE' && (
+                  <>
+                    <NavLink to="/migrante/emergencias">EMERGENCIAS</NavLink>
+                    <NavLink to="/migrante/novedades">NOVEDADES</NavLink>
+                  </>
+                )}
+                {userProfile?.tipo === 'ENTIDAD' && (
+                  <>
+                    <NavLink to="/entidad/emergencias">EMERGENCIAS</NavLink>
+                    <NavLink to="/entidad/servicios">SERVICIOS</NavLink>
+                    <NavLink to="/entidad/novedades">NOVEDADES</NavLink>
+                  </>
+                )}
+                {userProfile?.tipo === 'GERENCIA' && (
+                  <NavLink to="/gerencia">GERENCIA</NavLink>
+                )}
+                
+                {/* User actions */}
+                <div className="flex items-center space-x-2 ml-4">
+                  <Link 
+                    to="/perfil" 
+                    onClick={handleLinkClick}
+                    className="flex items-center space-x-2 text-white/90 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-bold">
+                        {userProfile?.nombre?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase()}
+                      </span>
+                    </div>
+                    <span className="text-sm font-medium">{userProfile?.nombre?.split(' ')[0] || 'Usuario'}</span>
+                  </Link>
+                  <button
+                    onClick={handleSignOut}
+                    className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium uppercase tracking-wide transition-all duration-200"
+                  >
+                    CERRAR SESIÓN
+                  </button>
+                </div>
+              </>
+            )}
+            
+            {/* Show login/register when NOT logged in */}
+            {!user && (
+              <div className="flex items-center space-x-3 ml-4">
                 <Link
                   to="/login"
-                  className="text-white hover:text-blue-200"
+                  onClick={handleLinkClick}
+                  className="text-white/90 hover:text-white text-sm font-medium uppercase tracking-wide transition-colors duration-200 px-3 py-2"
                 >
-                  Iniciar Sesión
+                  INICIAR SESIÓN
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50"
+                  onClick={handleLinkClick}
+                  className="bg-white text-blue-600 px-5 py-2 rounded-lg text-sm font-bold uppercase tracking-wide hover:bg-blue-50 transition-all duration-200 shadow-md"
                 >
-                  Registrarse
+                  REGISTRARSE
                 </Link>
               </div>
             )}
@@ -78,7 +117,7 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden text-white p-2"
+            className="md:hidden text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {isMenuOpen ? (
@@ -92,26 +131,50 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-blue-500">
-            <div className="flex flex-col space-y-3">
-              <Link to="/entidades" className="text-white hover:text-blue-200 py-2">
+          <div className="md:hidden py-4 border-t border-white/20">
+            <div className="flex flex-col space-y-1">
+              <Link to="/entidades" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
                 Entidades
               </Link>
-              <Link to="/evaluanos" className="text-white hover:text-blue-200 py-2">
-                Evalúanos
+              <Link to="/evaluanos" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
+                Evalúarnos
               </Link>
               {user ? (
                 <>
-                  <Link to={getDashboardPath()} className="text-white hover:text-blue-200 py-2">
-                    {userProfile?.tipo === 'GERENCIA' ? 'Gerencia' : 
-                     userProfile?.tipo === 'ENTIDAD' ? 'Mi Entidad' : 'Mi Panel'}
-                  </Link>
-                  <Link to="/perfil" className="text-white hover:text-blue-200 py-2">
-                    Perfil
+                  {userProfile?.tipo === 'MIGRANTE' && (
+                    <>
+                      <Link to="/migrante/emergencias" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
+                        Emergencias
+                      </Link>
+                      <Link to="/migrante/novedades" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
+                        Novedades
+                      </Link>
+                    </>
+                  )}
+                  {userProfile?.tipo === 'ENTIDAD' && (
+                    <>
+                      <Link to="/entidad/emergencias" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
+                        Emergencias
+                      </Link>
+                      <Link to="/entidad/servicios" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
+                        Servicios
+                      </Link>
+                      <Link to="/entidad/novedades" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
+                        Novedades
+                      </Link>
+                    </>
+                  )}
+                  {userProfile?.tipo === 'GERENCIA' && (
+                    <Link to="/gerencia" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
+                      Panel de Gerencia
+                    </Link>
+                  )}
+                  <Link to="/perfil" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
+                    Mi Perfil
                   </Link>
                   <button
                     onClick={handleSignOut}
-                    className="bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-800 text-left"
+                    className="bg-white/10 text-white py-3 px-4 rounded-lg hover:bg-white/20 transition-colors font-medium uppercase text-sm text-left mt-2"
                   >
                     Cerrar Sesión
                   </button>
@@ -120,13 +183,15 @@ const Navbar = () => {
                 <div className="flex flex-col space-y-2 pt-2">
                   <Link
                     to="/login"
-                    className="text-white hover:text-blue-200 py-2"
+                    onClick={handleLinkClick}
+                    className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm"
                   >
                     Iniciar Sesión
                   </Link>
                   <Link
                     to="/register"
-                    className="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 text-center"
+                    onClick={handleLinkClick}
+                    className="bg-white text-blue-600 py-3 px-4 rounded-lg hover:bg-blue-50 transition-colors font-bold uppercase text-sm text-center"
                   >
                     Registrarse
                   </Link>

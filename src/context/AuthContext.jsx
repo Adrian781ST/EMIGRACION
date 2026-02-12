@@ -42,8 +42,13 @@ export const AuthProvider = ({ children }) => {
         .eq('id', userId)
         .single()
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user profile:', error)
+      if (error) {
+        // Check if it's a "not found" error (user profile doesn't exist yet)
+        if (error.code === 'PGRST116') {
+          console.warn('Usuario no encontrado en tabla usuarios - puede que el trigger no haya funcionado')
+          return
+        }
+        console.error('Error fetching user profile:', error.message)
       } else if (data) {
         setUserProfile(data)
       }

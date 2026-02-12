@@ -7,24 +7,29 @@ import Register from './pages/Register'
 import VerEntidades from './pages/VerEntidades'
 import Evaluanos from './pages/Evaluanos'
 import Perfil from './pages/Perfil'
-import DashboardMigrante from './pages/migrante/DashboardMigrante'
-import DashboardEntidad from './pages/entidad/DashboardEntidad'
 import DashboardGerencia from './pages/gerencia/DashboardGerencia'
 import ProtectedRoute from './components/ProtectedRoute'
+
+// Import Migrante components
+import DashboardMigrante from './pages/migrante/DashboardMigrante'
+import { EmergenciasMigrante, NovedadesPage } from './pages/migrante/DashboardMigrante'
+
+// Import Entidad components
+import { EmergenciasEntidad, ServiciosEntidad, EvaluacionesEntidad, NovedadesEntidad } from './pages/entidad/DashboardEntidad'
 
 const AppRoutes = () => {
   const { userProfile, loading } = useAuth()
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -38,17 +43,37 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } />
         
-        {/* Rutas Migrante */}
-        <Route path="/migrante/*" element={
+        {/* Rutas Migrante - Directas */}
+        <Route path="/migrante/emergencias" element={
           <ProtectedRoute roles={['MIGRANTE']}>
-            <DashboardMigrante />
+            <EmergenciasMigrante />
+          </ProtectedRoute>
+        } />
+        <Route path="/migrante/novedades" element={
+          <ProtectedRoute roles={['MIGRANTE']}>
+            <NovedadesPage />
           </ProtectedRoute>
         } />
         
-        {/* Rutas Entidad */}
-        <Route path="/entidad/*" element={
+        {/* Rutas Entidad - Directas */}
+        <Route path="/entidad/emergencias" element={
           <ProtectedRoute roles={['ENTIDAD']}>
-            <DashboardEntidad />
+            <EmergenciasEntidad />
+          </ProtectedRoute>
+        } />
+        <Route path="/entidad/servicios" element={
+          <ProtectedRoute roles={['ENTIDAD']}>
+            <ServiciosEntidad />
+          </ProtectedRoute>
+        } />
+        <Route path="/entidad/evaluaciones" element={
+          <ProtectedRoute roles={['ENTIDAD']}>
+            <EvaluacionesEntidad />
+          </ProtectedRoute>
+        } />
+        <Route path="/entidad/novedades" element={
+          <ProtectedRoute roles={['ENTIDAD']}>
+            <NovedadesEntidad />
           </ProtectedRoute>
         } />
         
