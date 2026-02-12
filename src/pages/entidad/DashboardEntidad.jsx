@@ -154,7 +154,7 @@ const DashboardEntidad = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Link to="emergencias" className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
@@ -223,7 +223,7 @@ const DashboardEntidad = () => {
 
         <div className="bg-white rounded-xl shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Estadísticas Rápidas</h2>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 md:grid-cols-3 gap-4">
             <div className="p-4 bg-gray-50 rounded-lg">
               <p className="text-gray-600 text-sm">Emergencias Pendientes</p>
               <p className="text-3xl font-bold text-gray-800" id="pending-count">-</p>

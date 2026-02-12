@@ -44,7 +44,11 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-2">
             {/* Public links - visible for everyone */}
             <NavLink to="/entidades">ENTIDADES</NavLink>
-            <NavLink to="/evaluanos">EVALUARNOS</NavLink>
+            
+            {/* Only show EVALUARNOS for non-ENTIDAD and non-GERENCIA users */}
+            {userProfile?.tipo !== 'ENTIDAD' && userProfile?.tipo !== 'GERENCIA' && (
+              <NavLink to="/evaluanos">EVALUARNOS</NavLink>
+            )}
             
             {/* Show user-specific links when logged in */}
             {user && (
@@ -136,9 +140,11 @@ const Navbar = () => {
               <Link to="/entidades" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
                 Entidades
               </Link>
-              <Link to="/evaluanos" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
-                Evalúarnos
-              </Link>
+              {userProfile?.tipo !== 'ENTIDAD' && userProfile?.tipo !== 'GERENCIA' && (
+                <Link to="/evaluanos" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
+                  Evalúarnos
+                </Link>
+              )}
               {user ? (
                 <>
                   {userProfile?.tipo === 'MIGRANTE' && (
