@@ -16,33 +16,33 @@ const Home = () => {
             La plataforma que conecta migrantes con servicios y oportunidades en Colombia
           </p>
           {!user && (
-            <div className="flex justify-center space-x-4">
+            <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
               <Link
                 to="/register"
-                className="bg-white text-blue-600 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-50"
+                className="bg-white text-blue-600 px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-50"
               >
                 Registrarse
               </Link>
               <Link
                 to="/login"
-                className="border-2 border-white text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700"
+                className="border-2 border-white text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700"
               >
                 Iniciar Sesión
               </Link>
             </div>
           )}
           {user && userProfile?.tipo === 'MIGRANTE' && (
-            <div className="flex justify-center space-x-4 mt-6">
+            <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4 mt-6">
               <Link
                 to="/migrante/emergencias"
-                className="bg-red-500 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-red-600 flex items-center space-x-2 shadow-lg"
+                className="bg-red-500 text-white px-6 py-4 rounded-lg text-lg font-semibold hover:bg-red-600 flex items-center justify-center space-x-2 shadow-lg"
               >
                 <span>🚨</span>
                 <span>Reportar Emergencia</span>
               </Link>
               <Link
                 to="/migrante/novedades"
-                className="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-50 flex items-center space-x-2 shadow-lg"
+                className="bg-white text-blue-600 px-6 py-4 rounded-lg text-lg font-semibold hover:bg-blue-50 flex items-center justify-center space-x-2 shadow-lg"
               >
                 <span>📋</span>
                 <span>Ver Novedades</span>
@@ -71,22 +71,22 @@ const Home = () => {
 
       <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div className="p-6">
-              <div className="text-4xl font-bold text-blue-600 mb-2">150+</div>
-              <div className="text-gray-600">Entidades Registradas</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div className="p-4">
+              <div className="text-2xl md:text-4xl font-bold text-blue-600 mb-2">150+</div>
+              <div className="text-gray-600 text-sm">Entidades Registradas</div>
             </div>
-            <div className="p-6">
-              <div className="text-4xl font-bold text-green-600 mb-2">500+</div>
-              <div className="text-gray-600">Migrantes Apoyados</div>
+            <div className="p-4">
+              <div className="text-2xl md:text-4xl font-bold text-green-600 mb-2">500+</div>
+              <div className="text-gray-600 text-sm">Migrantes Apoyados</div>
             </div>
-            <div className="p-6">
-              <div className="text-4xl font-bold text-yellow-600 mb-2">200+</div>
-              <div className="text-gray-600">Emergencias Resueltas</div>
+            <div className="p-4">
+              <div className="text-2xl md:text-4xl font-bold text-yellow-600 mb-2">200+</div>
+              <div className="text-gray-600 text-sm">Emergencias Resueltas</div>
             </div>
-            <div className="p-6">
-              <div className="text-4xl font-bold text-purple-600 mb-2">50+</div>
-              <div className="text-gray-600">Ciudades Cobertas</div>
+            <div className="p-4">
+              <div className="text-2xl md:text-4xl font-bold text-purple-600 mb-2">50+</div>
+              <div className="text-gray-600 text-sm">Ciudades Cobertas</div>
             </div>
           </div>
         </div>
