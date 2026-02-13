@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useState, useEffect } from 'react'
 
@@ -89,19 +90,19 @@ const Perfil = () => {
                 <div className="flex flex-wrap gap-2">
                   {userProfile?.tipo === 'MIGRANTE' && (
                     <>
-                      <a href="/migrante/emergencias" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Emergencias</a>
-                      <a href="/migrante/novedades" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Novedades</a>
+                      <Link to="/migrante/emergencias" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Emergencias</Link>
+                      <Link to="/migrante/novedades" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Novedades</Link>
                     </>
                   )}
                   {userProfile?.tipo === 'ENTIDAD' && (
                     <>
-                      <a href="/entidad/emergencias" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Emergencias</a>
-                      <a href="/entidad/servicios" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Servicios</a>
-                      <a href="/entidad/evaluaciones" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Evaluaciones</a>
+                      <Link to="/entidad/emergencias" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Emergencias</Link>
+                      <Link to="/entidad/servicios" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Servicios</Link>
+                      <Link to="/entidad/evaluaciones" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Evaluaciones</Link>
                     </>
                   )}
                   {userProfile?.tipo === 'GERENCIA' && (
-                    <a href="/gerencia" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Panel de Gerencia</a>
+                    <Link to="/gerencia" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Panel de Gerencia</Link>
                   )}
                 </div>
               </div>

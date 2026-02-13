@@ -166,8 +166,8 @@ const VerEntidades = () => {
             {Object.entries(groupedEntidades).map(([tipo, entidades]) => (
               <div key={tipo} className="bg-white rounded-2xl shadow-lg overflow-hidden">
                 {/* Section Header */}
-                <div className={`bg-gradient-to-r ${getTipoColor(tipo)} text-white p-6 text-center`}>
-                  <div className="flex flex-col items-center space-x-4">
+                <div className={`bg-gradient-to-r ${getTipoColor(tipo)} text-white p-6`}>
+                  <div className="flex items-center space-x-4">
                     <span className="text-4xl">{getTipoIcon(tipo)}</span>
                     <div>
                       <h2 className="text-2xl font-bold">{getTipoLabel(tipo)}</h2>
@@ -181,12 +181,12 @@ const VerEntidades = () => {
                   <div className="flex flex-wrap justify-center gap-6">
                     {entidades.map(entidad => (
                       <div key={entidad.id} className="bg-gray-50 rounded-xl p-5 hover:shadow-md transition-shadow border border-gray-100 text-center w-full sm:w-72 flex-shrink-0">
-                        <div className="flex flex-col items-center mb-3">
-                          <h3 className="text-lg font-semibold text-gray-800">
+                        <div className="flex flex-col mb-3">
+                          <h3 className="text-lg font-semibold text-gray-800 text-center">
                             {entidad.nombre}
                           </h3>
                           {user && getAverageRating(entidad.id) && (
-                            <div className="flex items-center space-x-2 bg-gradient-to-r from-amber-400 to-orange-400 px-3 py-1 rounded-full shadow-sm mt-2">
+                            <div className="flex items-center space-x-2 bg-gradient-to-r from-amber-400 to-orange-400 px-3 py-1 rounded-full shadow-sm mt-2 mx-auto">
                               {renderRatingStars(getAverageRating(entidad.id).average)}
                               <div className="flex flex-col items-start">
                                 <span className="text-white font-bold text-sm leading-none">

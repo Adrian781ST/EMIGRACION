@@ -59,6 +59,10 @@ export const AuthProvider = ({ children }) => {
 
   const signUp = async (email, password, nombre, tipo) => {
     try {
+      // Debug: Log Supabase configuration
+      console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL)
+      console.log('Supabase Key exists:', !!import.meta.env.VITE_SUPABASE_ANON_KEY)
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -69,7 +73,7 @@ export const AuthProvider = ({ children }) => {
       
       if (error) {
         // Provide more specific error messages
-        if (error.message.includes('fetch')) {
+        if (error.message.includes('fetch') || error.message.includes('network')) {
           return { success: false, error: 'Error de conexión. Verifica tu internet o intenta más tarde.' }
         }
         if (error.message.includes('already registered')) {
@@ -78,11 +82,14 @@ export const AuthProvider = ({ children }) => {
         if (error.message.includes('Invalid email')) {
           return { success: false, error: 'Por favor ingresa un correo válido.' }
         }
-        throw error
+        // Log the full error for debugging
+        console.error('Supabase signUp error:', error)
+        return { success: false, error: error.message }
       }
       return { success: true, data }
     } catch (error) {
       // Handle network errors
+      console.error('SignUp exception:', error)
       if (error.message.includes('fetch') || error.message.includes('network')) {
         return { success: false, error: 'Error de conexión. Verifica tu internet o intenta más tarde.' }
       }
@@ -107,10 +114,13 @@ export const AuthProvider = ({ children }) => {
         if (error.message.includes('Email not confirmed')) {
           return { success: false, error: 'Por favor verifica tu correo electrónico.' }
         }
-        throw error
+        // Log the full error for debugging
+        console.error('Supabase signIn error:', error)
+        return { success: false, error: error.message }
       }
       return { success: true, data }
     } catch (error) {
+      console.error('SignIn exception:', error)
       if (error.message.includes('fetch') || error.message.includes('network')) {
         return { success: false, error: 'Error de conexión. Verifica tu internet.' }
       }

@@ -68,74 +68,74 @@ const DashboardGerencia = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Link to="usuarios" className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-2xl">👥</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <Link to="usuarios" className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-xl sm:text-2xl">👥</span>
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">Usuarios</h3>
-                <p className="text-gray-600 text-sm">Gestionar usuarios</p>
-              </div>
-            </div>
-          </Link>
-
-          <Link to="emergencias" className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                <span className="text-2xl">🚨</span>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">Emergencias</h3>
-                <p className="text-gray-600 text-sm">Ver todas las emergencias</p>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">Usuarios</h3>
+                <p className="text-gray-600 text-xs sm:text-sm truncate">Gestionar usuarios</p>
               </div>
             </div>
           </Link>
 
-          <Link to="evaluaciones" className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                <span className="text-2xl">⭐</span>
+          <Link to="emergencias" className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-xl sm:text-2xl">🚨</span>
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">Evaluaciones</h3>
-                <p className="text-gray-600 text-sm">Ver calificaciones</p>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">Emergencias</h3>
+                <p className="text-gray-600 text-xs sm:text-sm truncate">Ver emergencias</p>
               </div>
             </div>
           </Link>
 
-          <Link to="novedades" className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <span className="text-2xl">📋</span>
+          <Link to="evaluaciones" className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-xl sm:text-2xl">⭐</span>
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">Novedades</h3>
-                <p className="text-gray-600 text-sm">Gestionar noticias</p>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">Evaluaciones</h3>
+                <p className="text-gray-600 text-xs sm:text-sm truncate">Ver calificaciones</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link to="novedades" className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-xl sm:text-2xl">📋</span>
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">Novedades</h3>
+                <p className="text-gray-600 text-xs sm:text-sm truncate">Gestionar noticias</p>
               </div>
             </div>
           </Link>
         </div>
 
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Resumen General</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-gray-600 text-sm">Total Usuarios</p>
-              <p className="text-3xl font-bold text-blue-600">{stats.totalUsuarios}</p>
+        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Resumen General</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
+              <p className="text-gray-600 text-xs sm:text-sm">Total Usuarios</p>
+              <p className="text-2xl sm:text-3xl font-bold text-blue-600">{stats.totalUsuarios}</p>
             </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-gray-600 text-sm">Entidades</p>
-              <p className="text-3xl font-bold text-green-600">{stats.totalEntidades}</p>
+            <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
+              <p className="text-gray-600 text-xs sm:text-sm">Entidades</p>
+              <p className="text-2xl sm:text-3xl font-bold text-green-600">{stats.totalEntidades}</p>
             </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-gray-600 text-sm">Emergencias Activas</p>
-              <p className="text-3xl font-bold text-red-600">{stats.emergenciasActivas}</p>
+            <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
+              <p className="text-gray-600 text-xs sm:text-sm">Emergencias</p>
+              <p className="text-2xl sm:text-3xl font-bold text-red-600">{stats.emergenciasActivas}</p>
             </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-gray-600 text-sm">Evaluaciones</p>
-              <p className="text-3xl font-bold text-yellow-600">{stats.totalEvaluaciones}</p>
+            <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
+              <p className="text-gray-600 text-xs sm:text-sm">Evaluaciones</p>
+              <p className="text-2xl sm:text-3xl font-bold text-yellow-600">{stats.totalEvaluaciones}</p>
             </div>
           </div>
         </div>
@@ -205,39 +205,63 @@ const UsuariosAdmin = () => {
             Volver al Panel
           </Link>
         </div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-8">Gestión de Usuarios</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6 sm:mb-8">Gestión de Usuarios</h1>
 
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {usuarios.map(usuario => (
-                <tr key={usuario.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
-                    {usuario.nombre}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {usuario.email}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${getRoleColor(usuario.tipo)}`}>
-                      {getRoleLabel(usuario.tipo)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {new Date(usuario.created_at).toLocaleDateString()}
-                  </td>
+        {/* Mobile Card View */}
+        <div className="lg:hidden space-y-4">
+          {usuarios.map(usuario => (
+            <div key={usuario.id} className="bg-white rounded-xl shadow-md p-4">
+              <div className="flex flex-col items-center mb-2">
+                <p className="font-semibold text-gray-800 text-sm">{usuario.nombre}</p>
+                <p className="text-sm text-gray-600 mb-1">{usuario.email}</p>
+              </div>
+              <div className="flex justify-center mb-2">
+                <span className={`text-xs font-medium px-2 py-1 rounded-full ${getRoleColor(usuario.tipo)}`}>
+                  {getRoleLabel(usuario.tipo)}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 text-center">{new Date(usuario.created_at).toLocaleDateString()}</p>
+            </div>
+          ))}
+          {usuarios.length === 0 && (
+            <p className="text-center text-gray-600">No hay usuarios registrados</p>
+          )}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden lg:block bg-white rounded-xl shadow-md overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[600px]">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {usuarios.map(usuario => (
+                  <tr key={usuario.id}>
+                    <td className="px-4 py-3 text-sm font-medium text-gray-800 truncate max-w-[150px]">
+                      {usuario.nombre}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 truncate max-w-[200px]">
+                      {usuario.email}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${getRoleColor(usuario.tipo)}`}>
+                        {getRoleLabel(usuario.tipo)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {new Date(usuario.created_at).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -385,31 +409,31 @@ const EmergenciasAdmin = () => {
             Volver al Panel
           </Link>
         </div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-8">Gestión de Emergencias</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6 sm:mb-8">Gestión de Emergencias</h1>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow-md p-4">
-            <p className="text-gray-600 text-sm">Pendientes</p>
-            <p className="text-2xl font-bold text-yellow-600">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="bg-white rounded-xl shadow-md p-3 sm:p-4">
+            <p className="text-gray-600 text-xs sm:text-sm">Pendientes</p>
+            <p className="text-xl sm:text-2xl font-bold text-yellow-600">
               {emergencias.filter(e => e.estado === 'PENDIENTE').length}
             </p>
           </div>
-          <div className="bg-white rounded-xl shadow-md p-4">
-            <p className="text-gray-600 text-sm">Asignadas</p>
-            <p className="text-2xl font-bold text-blue-600">
+          <div className="bg-white rounded-xl shadow-md p-3 sm:p-4">
+            <p className="text-gray-600 text-xs sm:text-sm">Asignadas</p>
+            <p className="text-xl sm:text-2xl font-bold text-blue-600">
               {emergencias.filter(e => e.estado === 'ASIGNADA').length}
             </p>
           </div>
-          <div className="bg-white rounded-xl shadow-md p-4">
-            <p className="text-gray-600 text-sm">Atendidas</p>
-            <p className="text-2xl font-bold text-green-600">
+          <div className="bg-white rounded-xl shadow-md p-3 sm:p-4">
+            <p className="text-gray-600 text-xs sm:text-sm">Atendidas</p>
+            <p className="text-xl sm:text-2xl font-bold text-green-600">
               {emergencias.filter(e => e.estado === 'ATENDIDA').length}
             </p>
           </div>
-          <div className="bg-white rounded-xl shadow-md p-4">
-            <p className="text-gray-600 text-sm">Urgentes</p>
-            <p className="text-2xl font-bold text-red-600">
+          <div className="bg-white rounded-xl shadow-md p-3 sm:p-4">
+            <p className="text-gray-600 text-xs sm:text-sm">Urgentes</p>
+            <p className="text-xl sm:text-2xl font-bold text-red-600">
               {emergencias.filter(e => e.prioridad === 'URGENTE').length}
             </p>
           </div>
@@ -417,62 +441,62 @@ const EmergenciasAdmin = () => {
 
         <div className="space-y-4">
           {emergencias.map(emergencia => (
-            <div key={emergencia.id} className="bg-white rounded-xl shadow-md p-6">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <span className="bg-red-100 text-red-800 text-sm font-medium px-2 py-0.5 rounded">
+            <div key={emergencia.id} className="bg-white rounded-xl shadow-md p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                <div className="flex-1 w-full">
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    <span className="bg-red-100 text-red-800 text-xs sm:text-sm font-medium px-2 py-0.5 rounded">
                       {emergencia.tipo}
                     </span>
-                    <span className={`text-sm font-medium px-2 py-0.5 rounded ${getEstadoColor(emergencia.estado)}`}>
+                    <span className={`text-xs sm:text-sm font-medium px-2 py-0.5 rounded ${getEstadoColor(emergencia.estado)}`}>
                       {emergencia.estado}
                     </span>
                     <span className={`text-xs font-medium px-2 py-0.5 rounded ${getPrioridadColor(emergencia.prioridad)}`}>
                       {emergencia.prioridad}
                     </span>
                   </div>
-                  <p className="text-gray-800">{emergencia.descripcion}</p>
+                  <p className="text-gray-800 text-sm sm:text-base break-words">{emergencia.descripcion}</p>
                   {emergencia.direccion && (
-                    <p className="text-gray-600 text-sm mt-2">📍 {emergencia.direccion}</p>
+                    <p className="text-gray-600 text-xs sm:text-sm mt-2">📍 {emergencia.direccion}</p>
                   )}
                   
-                  <div className="mt-3 grid grid-cols-2 gap-4">
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600">Reportado por:</p>
-                      <p className="font-medium">{emergencia.usuarios?.nombre}</p>
-                      <p className="text-sm text-gray-500">{emergencia.usuarios?.email}</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Reportado por:</p>
+                      <p className="font-medium text-sm sm:text-base break-words">{emergencia.usuarios?.nombre}</p>
+                      <p className="text-xs sm:text-sm text-gray-500 break-words">{emergencia.usuarios?.email}</p>
                     </div>
                     {emergencia.entidades && (
                       <div className="p-3 bg-blue-50 rounded-lg">
-                        <p className="text-sm text-gray-600">Asignada a:</p>
-                        <p className="font-medium text-blue-800">{emergencia.entidades.nombre}</p>
+                        <p className="text-xs sm:text-sm text-gray-600">Asignada a:</p>
+                        <p className="font-medium text-blue-800 text-sm sm:text-base break-words">{emergencia.entidades.nombre}</p>
                       </div>
                     )}
                   </div>
                   
                   {emergencia.seguimiento && (
                     <div className="mt-3 p-3 bg-yellow-50 rounded-lg">
-                      <p className="text-sm text-gray-600">Seguimiento:</p>
-                      <p className="text-gray-800">{emergencia.seguimiento}</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Seguimiento:</p>
+                      <p className="text-gray-800 text-sm break-words">{emergencia.seguimiento}</p>
                     </div>
                   )}
                   
-                  <p className="text-gray-500 text-sm mt-2">
+                  <p className="text-gray-500 text-xs sm:text-sm mt-2">
                     {new Date(emergencia.created_at).toLocaleString()}
                   </p>
                 </div>
                 
-                <div className="flex space-x-2 ml-4">
+                <div className="flex sm:flex-col space-x-2 sm:space-x-0 sm:space-y-2 w-full sm:w-auto flex-shrink-0">
                   <button
                     onClick={() => openAssignModal(emergencia)}
-                    className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm"
+                    className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-xs sm:text-sm flex-1 sm:flex-none"
                   >
                     Asignar
                   </button>
                   {emergencia.estado !== 'ATENDIDA' && (
                     <button
                       onClick={() => handleAtender(emergencia.id)}
-                      className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 text-sm"
+                      className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 text-xs sm:text-sm flex-1 sm:flex-none"
                     >
                       Atendida
                     </button>
@@ -593,41 +617,64 @@ const EvaluacionesAdmin = () => {
             Volver al Panel
           </Link>
         </div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-8">Todas las Evaluaciones</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6 sm:mb-8">Todas las Evaluaciones</h1>
 
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usuario</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entidad</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Calificación</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Comentario</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {calificaciones.map(calif => (
-                <tr key={calif.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
-                    {calif.usuarios?.nombre}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {calif.entidades?.nombre}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-yellow-500">{'★'.repeat(calif.calificacion)}</span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
-                    {calif.comentario}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {new Date(calif.created_at).toLocaleDateString()}
-                  </td>
+        {/* Mobile Card View */}
+        <div className="lg:hidden space-y-4">
+          {calificaciones.map(calif => (
+            <div key={calif.id} className="bg-white rounded-xl shadow-md p-4">
+              <div className="flex flex-col items-center mb-3">
+                <p className="font-semibold text-gray-800 text-sm">{calif.usuarios?.nombre}</p>
+                <p className="text-xs text-gray-500">{calif.entidades?.nombre}</p>
+              </div>
+              <div className="flex justify-center mb-3">
+                <span className="text-yellow-500 text-lg">{['★'.repeat(calif.calificacion)]}</span>
+              </div>
+              <p className="text-sm text-gray-600 mb-3 text-center">{calif.comentario}</p>
+              <p className="text-xs text-gray-500 text-center">{new Date(calif.created_at).toLocaleDateString()}</p>
+            </div>
+          ))}
+          {calificaciones.length === 0 && (
+            <p className="text-center text-gray-600">No hay evaluaciones registradas</p>
+          )}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden lg:block bg-white rounded-xl shadow-md overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px]">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usuario</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entidad</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Calificación</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Comentario</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {calificaciones.map(calif => (
+                  <tr key={calif.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                      {calif.usuarios?.nombre}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {calif.entidades?.nombre}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-yellow-500">{'★'.repeat(calif.calificacion)}</span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
+                      {calif.comentario}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {new Date(calif.created_at).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
