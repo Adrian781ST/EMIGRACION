@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 const VerEntidades = () => {
-  const { user } = useAuth()
+  const { user, userProfile } = useAuth()
   const [entidades, setEntidades] = useState([])
   const [loading, setLoading] = useState(true)
   const [ratings, setRatings] = useState({})
@@ -170,7 +170,7 @@ const VerEntidades = () => {
                   <div className="flex items-center space-x-4">
                     <span className="text-4xl">{getTipoIcon(tipo)}</span>
                     <div>
-                      <h2 className="text-2xl font-bold">{getTipoLabel(tipo)}</h2>
+                      <h2 className="text-2xl font-bold uppercase">{getTipoLabel(tipo)}</h2>
                       <p className="text-white/80">{entidades.length} entidad{entidades.length !== 1 ? 'es' : ''}</p>
                     </div>
                   </div>
@@ -222,7 +222,7 @@ const VerEntidades = () => {
                           </p>
                         )}
                         
-                        {user ? (
+                        {user && userProfile?.tipo === 'MIGRANTE' ? (
                           <Link
                             to={`/evaluanos?entidad=${entidad.id}`}
                             className="mt-4 block w-full text-center bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2.5 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
@@ -234,14 +234,14 @@ const VerEntidades = () => {
                               <span>Evaluar Servicio</span>
                             </span>
                           </Link>
-                        ) : (
+                        ) : !user ? (
                           <Link
                             to="/login"
                             className="mt-4 block w-full text-center bg-gray-200 text-gray-600 py-2.5 rounded-lg font-medium hover:bg-gray-300 transition-all"
                           >
                             Inicia sesión para evaluar
                           </Link>
-                        )}
+                        ) : null}
                       </div>
                     ))}
                   </div>
