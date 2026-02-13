@@ -47,7 +47,7 @@ const NovedadesMigrante = () => {
     <div className="bg-white rounded-xl shadow-md p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-800">📋 Novedades</h2>
-        <Link to="novedades" className="text-blue-600 text-sm hover:underline">Ver todas</Link>
+        <Link to="novedades" className="text-blue-600 text-sm hover:underline">Volver atrás</Link>
       </div>
       
       {novedades.length === 0 ? (
