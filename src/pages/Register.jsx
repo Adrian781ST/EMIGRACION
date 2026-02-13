@@ -79,7 +79,7 @@ const Register = () => {
             </div>
             <h1 className="text-3xl font-bold text-gray-800">Crear Cuenta</h1>
             <p className="text-gray-600 mt-2">
-              Únete a E-Migrante ya mismo!
+              Únete a DON MIGRANTE ya mismo!
             </p>
           </div>
 

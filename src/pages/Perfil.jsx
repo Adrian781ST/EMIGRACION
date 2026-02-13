@@ -65,22 +65,12 @@ const Perfil = () => {
               <h2 className="text-lg font-semibold text-gray-800 mb-4">Información de la Cuenta</h2>
               <div className="space-y-3">
                 <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Tipo de Usuario</span>
-                  <span className="font-medium">{getRoleLabel(userProfile?.tipo)}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b">
                   <span className="text-gray-600">Correo</span>
                   <span className="font-medium">{user?.email}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
                   <span className="text-gray-600">ID de Usuario</span>
                   <span className="font-medium text-sm">{user?.id}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Rol</span>
-                  <span className="font-medium bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                    {userProfile?.tipo || 'NO DEFINIDO'}
-                  </span>
                 </div>
               </div>
             </div>

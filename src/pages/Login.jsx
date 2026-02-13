@@ -39,7 +39,7 @@ const Login = () => {
             </div>
             <h1 className="text-3xl font-bold text-gray-800">Iniciar Sesión</h1>
             <p className="text-gray-600 mt-2">
-              Accede a tu cuenta de E-Migrante
+              Accede a tu cuenta de DON MIGRANTE
             </p>
           </div>
 

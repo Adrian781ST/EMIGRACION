@@ -36,7 +36,7 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 group">
             <span className="text-2xl font-bold text-white tracking-wider group-hover:scale-105 transition-transform duration-200">
-              E-MIGRANTE
+              DON MIGRANTE
             </span>
           </Link>
 
@@ -44,11 +44,6 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-2">
             {/* Public links - visible for everyone */}
             <NavLink to="/entidades">ENTIDADES</NavLink>
-            
-            {/* Only show EVALUARNOS for non-ENTIDAD and non-GERENCIA users */}
-            {userProfile?.tipo !== 'ENTIDAD' && userProfile?.tipo !== 'GERENCIA' && (
-              <NavLink to="/evaluanos">EVALUARNOS</NavLink>
-            )}
             
             {/* Show user-specific links when logged in */}
             {user && (
@@ -59,6 +54,7 @@ const Navbar = () => {
                 {userProfile?.tipo === 'MIGRANTE' && (
                   <>
                     <NavLink to="/migrante/emergencias">EMERGENCIAS</NavLink>
+                    <NavLink to="/evaluanos">EXPERIENCIA</NavLink>
                     <NavLink to="/migrante/novedades">NOVEDADES</NavLink>
                   </>
                 )}
@@ -103,14 +99,14 @@ const Navbar = () => {
                 <Link
                   to="/login"
                   onClick={handleLinkClick}
-                  className="text-white/90 hover:text-white text-sm font-medium uppercase tracking-wide transition-colors duration-200 px-3 py-2"
+                  className="bg-white text-blue-600 px-5 py-2 rounded-lg text-sm font-bold uppercase tracking-wide hover:bg-blue-50 transition-all duration-200 shadow-md"
                 >
                   INICIAR SESIÓN
                 </Link>
                 <Link
                   to="/register"
                   onClick={handleLinkClick}
-                  className="bg-white text-blue-600 px-5 py-2 rounded-lg text-sm font-bold uppercase tracking-wide hover:bg-blue-50 transition-all duration-200 shadow-md"
+                  className="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-5 py-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all duration-200"
                 >
                   REGISTRARSE
                 </Link>
@@ -140,17 +136,15 @@ const Navbar = () => {
               <Link to="/entidades" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
                 Entidades
               </Link>
-              {userProfile?.tipo !== 'ENTIDAD' && userProfile?.tipo !== 'GERENCIA' && (
-                <Link to="/evaluanos" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
-                  Evalúarnos
-                </Link>
-              )}
               {user ? (
                 <>
                   {userProfile?.tipo === 'MIGRANTE' && (
                     <>
                       <Link to="/migrante/emergencias" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
                         Emergencias
+                      </Link>
+                      <Link to="/evaluanos" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
+                        Experiencia
                       </Link>
                       <Link to="/migrante/novedades" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
                         Novedades
@@ -190,14 +184,14 @@ const Navbar = () => {
                   <Link
                     to="/login"
                     onClick={handleLinkClick}
-                    className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm"
+                    className="bg-white text-blue-600 py-3 px-4 rounded-lg hover:bg-blue-50 transition-colors font-bold uppercase text-sm text-center"
                   >
                     Iniciar Sesión
                   </Link>
                   <Link
                     to="/register"
                     onClick={handleLinkClick}
-                    className="bg-white text-blue-600 py-3 px-4 rounded-lg hover:bg-blue-50 transition-colors font-bold uppercase text-sm text-center"
+                    className="bg-white/10 hover:bg-white/20 text-white border border-white/30 py-3 px-4 rounded-lg transition-colors font-bold uppercase text-sm text-center"
                   >
                     Registrarse
                   </Link>

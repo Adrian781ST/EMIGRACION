@@ -67,9 +67,25 @@ export const AuthProvider = ({ children }) => {
         }
       })
       
-      if (error) throw error
+      if (error) {
+        // Provide more specific error messages
+        if (error.message.includes('fetch')) {
+          return { success: false, error: 'Error de conexión. Verifica tu internet o intenta más tarde.' }
+        }
+        if (error.message.includes('already registered')) {
+          return { success: false, error: 'Este correo ya está registrado.' }
+        }
+        if (error.message.includes('Invalid email')) {
+          return { success: false, error: 'Por favor ingresa un correo válido.' }
+        }
+        throw error
+      }
       return { success: true, data }
     } catch (error) {
+      // Handle network errors
+      if (error.message.includes('fetch') || error.message.includes('network')) {
+        return { success: false, error: 'Error de conexión. Verifica tu internet o intenta más tarde.' }
+      }
       return { success: false, error: error.message }
     }
   }
@@ -81,9 +97,23 @@ export const AuthProvider = ({ children }) => {
         password
       })
       
-      if (error) throw error
+      if (error) {
+        if (error.message.includes('fetch')) {
+          return { success: false, error: 'Error de conexión. Verifica tu internet.' }
+        }
+        if (error.message.includes('Invalid login credentials')) {
+          return { success: false, error: 'Correo o contraseña incorrectos.' }
+        }
+        if (error.message.includes('Email not confirmed')) {
+          return { success: false, error: 'Por favor verifica tu correo electrónico.' }
+        }
+        throw error
+      }
       return { success: true, data }
     } catch (error) {
+      if (error.message.includes('fetch') || error.message.includes('network')) {
+        return { success: false, error: 'Error de conexión. Verifica tu internet.' }
+      }
       return { success: false, error: error.message }
     }
   }

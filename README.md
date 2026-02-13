@@ -1,4 +1,4 @@
-# E-Migrante - Plataforma para Migrantes
+# DON MIGRANTE - Plataforma para Migrantes
 
 Plataforma web desarrollada en React + Supabase para conectar migrantes con servicios y oportunidades en Colombia.
 
@@ -78,8 +78,8 @@ Las credenciales ya están proporcionadas:
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/Adrian781ST/E-MIGRANTE.git
-cd E-MIGRANTE
+git clone https://github.com/Adrian781ST/DON-MIGRANTE.git
+cd DON-MIGRANTE
 
 # Instalar dependencias
 npm install
@@ -108,7 +108,7 @@ Después de ejecutar el seed, puedes crear cuentas de prueba a través del formu
 ## 📁 Estructura del Proyecto
 
 ```
-E-MIGRANTE/
+DON MIGRANTE/
 ├── src/
 │   ├── components/     # Componentes reutilizables
 │   ├── context/        # Contextos de React (Auth)
