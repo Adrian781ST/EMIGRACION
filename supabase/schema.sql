@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS entidades (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     usuario_id UUID REFERENCES usuarios(id) ON DELETE SET NULL,
     nombre TEXT NOT NULL,
+    codigo_institucion TEXT UNIQUE,
     descripcion TEXT,
     tipo TEXT NOT NULL CHECK (tipo IN ('SALUD', 'EDUCACION', 'LEGAL', 'VIVIENDA', 'EMPLEO', 'ALIMENTACION', 'OTROS')),
     direccion TEXT,
@@ -88,22 +89,40 @@ ALTER TABLE calificaciones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE novedades ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for usuarios
+ALTER TABLE usuarios ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view all usuarios" ON usuarios;
+DROP POLICY IF EXISTS "Users can insert their own data" ON usuarios;
+DROP POLICY IF EXISTS "Users can update own data" ON usuarios;
 CREATE POLICY "Users can view all usuarios" ON usuarios FOR SELECT USING (true);
 CREATE POLICY "Users can insert their own data" ON usuarios FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can update own data" ON usuarios FOR UPDATE USING (auth.uid() = id);
 
 -- RLS Policies for entidades
+ALTER TABLE entidades ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anyone can view enabled entidades" ON entidades;
+DROP POLICY IF EXISTS "Entidades can insert own data" ON entidades;
+DROP POLICY IF EXISTS "Entidades can update own data" ON entidades;
 CREATE POLICY "Anyone can view enabled entidades" ON entidades FOR SELECT USING (habilitado = true);
 CREATE POLICY "Entidades can insert own data" ON entidades FOR INSERT WITH CHECK (auth.uid() = usuario_id);
 CREATE POLICY "Entidades can update own data" ON entidades FOR UPDATE USING (auth.uid() = usuario_id);
 
 -- RLS Policies for servicios_entidad
+ALTER TABLE servicios_entidad ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anyone can view enabled servicios" ON servicios_entidad;
+DROP POLICY IF EXISTS "Entidades can manage own servicios" ON servicios_entidad;
 CREATE POLICY "Anyone can view enabled servicios" ON servicios_entidad FOR SELECT USING (habilitado = true);
 CREATE POLICY "Entidades can manage own servicios" ON servicios_entidad FOR ALL USING (
     EXISTS (SELECT 1 FROM entidades WHERE id = servicios_entidad.entidad_id AND usuario_id = auth.uid())
 );
 
 -- RLS Policies for emergencias
+ALTER TABLE emergencias ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view own emergencias" ON emergencias;
+DROP POLICY IF EXISTS "Entidades can view all emergencias" ON emergencias;
+DROP POLICY IF EXISTS "Gerencia can view all emergencias" ON emergencias;
+DROP POLICY IF EXISTS "Users can insert own emergencias" ON emergencias;
+DROP POLICY IF EXISTS "Entidades can update assigned emergencias" ON emergencias;
+DROP POLICY IF EXISTS "Gerencia can manage all emergencias" ON emergencias;
 CREATE POLICY "Users can view own emergencias" ON emergencias FOR SELECT USING (auth.uid() = usuario_id);
 CREATE POLICY "Entidades can view all emergencias" ON emergencias FOR SELECT USING (
     EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND tipo = 'ENTIDAD')
@@ -120,6 +139,12 @@ CREATE POLICY "Gerencia can manage all emergencias" ON emergencias FOR ALL USING
 );
 
 -- RLS Policies for calificaciones
+ALTER TABLE calificaciones ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view own calificaciones" ON calificaciones;
+DROP POLICY IF EXISTS "Entidades can view their calificaciones" ON calificaciones;
+DROP POLICY IF EXISTS "Gerencia can view all calificaciones" ON calificaciones;
+DROP POLICY IF EXISTS "Users can insert own calificaciones" ON calificaciones;
+DROP POLICY IF EXISTS "Gerencia can manage all calificaciones" ON calificaciones;
 -- Users can view their own calificaciones
 CREATE POLICY "Users can view own calificaciones" ON calificaciones FOR SELECT USING (
     auth.uid() = usuario_id
@@ -138,6 +163,9 @@ CREATE POLICY "Gerencia can manage all calificaciones" ON calificaciones FOR ALL
 );
 
 -- RLS Policies for novedades
+ALTER TABLE novedades ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anyone can view active novedades" ON novedades;
+DROP POLICY IF EXISTS "Gerencia can manage novedades" ON novedades;
 CREATE POLICY "Anyone can view active novedades" ON novedades FOR SELECT USING (activa = true);
 CREATE POLICY "Gerencia can manage novedades" ON novedades FOR ALL USING (
     EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND tipo = 'GERENCIA')

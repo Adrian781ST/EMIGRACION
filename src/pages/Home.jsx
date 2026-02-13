@@ -1,8 +1,68 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 
 const Home = () => {
   const { user, userProfile } = useAuth()
+  const [stats, setStats] = useState({
+    totalEntidades: 0,
+    totalMigrantes: 0,
+    emergenciasAtendidas: 0,
+    totalCiudades: 0,
+    totalNovedades: 0
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchStats()
+  }, [])
+
+  const fetchStats = async () => {
+    try {
+      // Total entidades
+      const { count: entidadesCount } = await supabase
+        .from('entidades')
+        .select('*', { count: 'exact', head: true })
+
+      // Total migrantes (usuarios tipo MIGRANTE)
+      const { count: migrantesCount } = await supabase
+        .from('usuarios')
+        .select('*', { count: 'exact', head: true })
+        .eq('tipo', 'MIGRANTE')
+
+      // Emergencias resueltas (atendidas)
+      const { count: emergenciasCount } = await supabase
+        .from('emergencias')
+        .select('*', { count: 'exact', head: true })
+        .eq('estado', 'ATENDIDA')
+
+      // Ciudades cubiertas - contar ciudades únicas de entidades
+      const { data: ciudadesData } = await supabase
+        .from('entidades')
+        .select('ciudad')
+        .not('ciudad', 'is', null)
+
+      const uniqueCiudades = new Set(ciudadesData?.map(e => e.ciudad) || [])
+
+      // Total novedades
+      const { count: novedadesCount } = await supabase
+        .from('novedades')
+        .select('*', { count: 'exact', head: true })
+
+      setStats({
+        totalEntidades: entidadesCount || 0,
+        totalMigrantes: migrantesCount || 0,
+        emergenciasAtendidas: emergenciasCount || 0,
+        totalCiudades: uniqueCiudades.size || 0,
+        totalNovedades: novedadesCount || 0
+      })
+    } catch (error) {
+      console.error('Error fetching stats:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -73,20 +133,20 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div className="p-4">
-              <div className="text-2xl md:text-4xl font-bold text-blue-600 mb-2">150+</div>
-              <div className="text-gray-600 text-sm">Entidades Registradas</div>
+              <div className="text-2xl md:text-4xl font-bold text-blue-600 mb-2">{loading ? '-' : stats.totalEntidades}</div>
+              <div className="text-gray-600 text-sm uppercase">ENTIDADES REGISTRADAS</div>
             </div>
             <div className="p-4">
-              <div className="text-2xl md:text-4xl font-bold text-green-600 mb-2">500+</div>
-              <div className="text-gray-600 text-sm">Migrantes Apoyados</div>
+              <div className="text-2xl md:text-4xl font-bold text-green-600 mb-2">{loading ? '-' : stats.totalMigrantes}</div>
+              <div className="text-gray-600 text-sm uppercase">MIGRANTES APOYADOS</div>
             </div>
             <div className="p-4">
-              <div className="text-2xl md:text-4xl font-bold text-yellow-600 mb-2">200+</div>
-              <div className="text-gray-600 text-sm">Emergencias Resueltas</div>
+              <div className="text-2xl md:text-4xl font-bold text-yellow-600 mb-2">{loading ? '-' : stats.emergenciasAtendidas}</div>
+              <div className="text-gray-600 text-sm uppercase">EMERGENCIAS RESUELTAS</div>
             </div>
             <div className="p-4">
-              <div className="text-2xl md:text-4xl font-bold text-purple-600 mb-2">50+</div>
-              <div className="text-gray-600 text-sm">Ciudades Cobertas</div>
+              <div className="text-2xl md:text-4xl font-bold text-purple-600 mb-2">{loading ? '-' : stats.totalNovedades}</div>
+              <div className="text-gray-600 text-sm uppercase">NOVEDADES</div>
             </div>
           </div>
         </div>

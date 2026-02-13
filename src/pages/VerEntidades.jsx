@@ -204,6 +204,21 @@ const VerEntidades = () => {
                           {entidad.descripcion}
                         </p>
                         
+                        {entidad.website ? (
+                          <a 
+                            href={entidad.website.startsWith('http') ? entidad.website : `https://${entidad.website}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-600 hover:text-blue-800 underline mb-1 text-center"
+                          >
+                            🌐 {entidad.website}
+                          </a>
+                        ) : entidad.codigo_institucion ? (
+                          <p className="text-xs font-mono text-gray-500 mb-1 text-center bg-gray-100 px-2 py-1 rounded">
+                            🏷️ {entidad.codigo_institucion}
+                          </p>
+                        ) : null}
+                        
                         {entidad.direccion && (
                           <p className="text-sm text-gray-500 mb-1 text-center">
                             📍 {entidad.direccion}

@@ -57,13 +57,13 @@ const Perfil = () => {
                 {userProfile?.nombre || 'Usuario'}
               </h1>
               <p className="text-gray-600">{user?.email}</p>
-              <span className="inline-block mt-2 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+              <span className="inline-block mt-2 bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full uppercase">
                 {getRoleLabel(userProfile?.tipo)}
               </span>
             </div>
 
             <div className="border-t pt-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Información de la Cuenta</h2>
+              <h2 className="text-lg font-semibold text-gray-800 mb-4 uppercase">Información de la Cuenta</h2>
               <div className="space-y-3">
                 <div className="flex justify-between py-2 border-b">
                   <span className="text-gray-600">Correo</span>
@@ -77,20 +77,21 @@ const Perfil = () => {
             </div>
 
             <div className="mt-8">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">
+              <h2 className="text-xl font-bold text-gray-800 mb-4 uppercase">
                 Panel de: {getRoleLabel(userProfile?.tipo)}
               </h2>
               <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
                 <p className="text-sm text-blue-700 mb-4">
                   {userProfile?.tipo === 'MIGRANTE' && 'Accede a tu panel de migrante para gestionar emergencias y más.'}
                   {userProfile?.tipo === 'ENTIDAD' && 'Accede al panel de tu entidad para gestionar servicios y emergencias.'}
-                  {userProfile?.tipo === 'GERENCIA' && 'Accede al panel de gerencia para administrar la plataforma.'}
+                  {userProfile?.tipo === 'GERENCIA' && 'Accede para administrar la plataforma.'}
                   {!userProfile?.tipo && 'Tu perfil no tiene un rol asignado. Contacta a soporte.'}
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap justify-center gap-2">
                   {userProfile?.tipo === 'MIGRANTE' && (
                     <>
                       <Link to="/migrante/emergencias" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Emergencias</Link>
+                      <Link to="/evaluanos" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Experiencia</Link>
                       <Link to="/migrante/novedades" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Novedades</Link>
                     </>
                   )}

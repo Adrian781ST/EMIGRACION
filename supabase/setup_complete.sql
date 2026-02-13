@@ -24,11 +24,13 @@ CREATE TABLE entidades (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     usuario_id UUID REFERENCES usuarios(id) ON DELETE SET NULL,
     nombre TEXT NOT NULL,
+    codigo_institucion TEXT UNIQUE,
     descripcion TEXT,
     tipo TEXT NOT NULL CHECK (tipo IN ('SALUD', 'EDUCACION', 'LEGAL', 'VIVIENDA', 'EMPLEO', 'ALIMENTACION', 'OTROS')),
     direccion TEXT,
     telefono TEXT,
     email TEXT,
+    website TEXT,
     habilitado BOOLEAN DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
@@ -163,14 +165,14 @@ CREATE INDEX IF NOT EXISTS idx_calificaciones_entidad ON calificaciones(entidad_
 CREATE INDEX IF NOT EXISTS idx_calificaciones_usuario ON calificaciones(usuario_id);
 
 -- 7. INSERTAR DATOS DE PRUEBA (ENTIDADES)
-INSERT INTO entidades (id, usuario_id, nombre, descripcion, tipo, direccion, telefono, email, habilitado) VALUES
-('11111111-1111-1111-1111-111111111111', NULL, 'Hospital Central', 'Hospital público con atención de urgencias para migrantes', 'SALUD', 'Carrera 10 #15-20', '555-0101', 'hospital@ejemplo.com', true),
-('22222222-2222-2222-2222-222222222222', NULL, 'Universidad Nacional', 'Programas de integración educativa para migrantes', 'EDUCACION', 'Calle 45 #10-25', '555-0202', 'universidad@ejemplo.com', true),
-('33333333-3333-3333-3333-333333333333', NULL, 'Consultoría Legal Migratoria', 'Asesoría legal en trámites de migración', 'LEGAL', 'Carrera 7 #50-15', '555-0303', 'legal@ejemplo.com', true),
-('44444444-4444-4444-4444-444444444444', NULL, 'Fundación Esperanza', 'Albergue temporal y alimentación para migrantes', 'VIVIENDA', 'Calle 30 #5-40', '555-0404', 'fundacion@ejemplo.com', true),
-('55555555-5555-5555-5555-555555555555', NULL, 'Agencia de Empleo Migrante', 'Conexión laboral para migrantes', 'EMPLEO', 'Carrera 15 #20-30', '555-0505', 'empleo@ejemplo.com', true),
-('66666666-6666-6666-6666-666666666666', NULL, 'Banco de Alimentos', 'Distribución de alimentos a población migrante', 'ALIMENTACION', 'Calle 60 #10-10', '555-0606', 'alimentos@ejemplo.com', true),
-('77777777-7777-7777-7777-777777777777', NULL, 'Centro de Atención Integral', 'Servicios múltiples para migrantes', 'OTROS', 'Carrera 5 #15-50', '555-0707', 'centro@ejemplo.com', true);
+INSERT INTO entidades (id, usuario_id, nombre, codigo_institucion, descripcion, tipo, direccion, telefono, email, website, habilitado) VALUES
+('11111111-1111-1111-1111-111111111111', NULL, 'Hospital Central', 'SAL-2024-0001', 'Hospital público con atención de urgencias para migrantes', 'SALUD', 'Carrera 10 #15-20', '555-0101', 'hospital@ejemplo.com', 'https://hospitalcentral.gov.co', true),
+('22222222-2222-2222-2222-222222222222', NULL, 'Universidad Nacional', 'EDU-2024-0002', 'Programas de integración educativa para migrantes', 'EDUCACION', 'Calle 45 #10-25', '555-0202', 'universidad@ejemplo.com', 'https://un.edu.co', true),
+('33333333-3333-3333-3333-333333333333', NULL, 'Consultoría Legal Migratoria', 'LEG-2024-0003', 'Asesoría legal en trámites de migración', 'LEGAL', 'Carrera 7 #50-15', '555-0303', 'legal@ejemplo.com', 'https://legalmigratoria.com.co', true),
+('44444444-4444-4444-4444-444444444444', NULL, 'Fundación Esperanza', 'VIV-2024-0004', 'Albergue temporal y alimentación para migrantes', 'VIVIENDA', 'Calle 30 #5-40', '555-0404', 'fundacion@ejemplo.com', 'https://fundacionesperanza.org', true),
+('55555555-5555-5555-5555-555555555555', NULL, 'Agencia de Empleo Migrante', 'EMP-2024-0005', 'Conexión laboral para migrantes', 'EMPLEO', 'Carrera 15 #20-30', '555-0505', 'empleo@ejemplo.com', 'https://empleomigrante.gov.co', true),
+('66666666-6666-6666-6666-666666666666', NULL, 'Banco de Alimentos', 'ALI-2024-0006', 'Distribución de alimentos a población migrante', 'ALIMENTACION', 'Calle 60 #10-10', '555-0606', 'alimentos@ejemplo.com', 'https://bancodealimentos.org.co', true),
+('77777777-7777-7777-7777-777777777777', NULL, 'Centro de Atención Integral', 'OTR-2024-0007', 'Servicios múltiples para migrantes', 'OTROS', 'Carrera 5 #15-50', '555-0707', 'centro@ejemplo.com', 'https://centroatencional.gob.co', true);
 
 -- 8. INSERTAR SERVICIOS DE ENTIDADES
 INSERT INTO servicios_entidad (entidad_id, nombre, descripcion, tipo, habilitado) VALUES

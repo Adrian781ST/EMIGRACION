@@ -69,7 +69,7 @@ const Evaluanos = () => {
 
       if (error) throw error
 
-      toast.success('¡Gracias por tu evaluación!')
+      toast.success('¡GRACIAS POR TU OPINIÓN!')
       setComentario('')
       setCalificacion(5)
     } catch (error) {
@@ -132,7 +132,7 @@ const Evaluanos = () => {
             <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-4xl">⭐</span>
             </div>
-            <h1 className="text-3xl font-bold mb-2">
+            <h1 className="text-3xl font-bold mb-2 uppercase">
               Evalúa tu Experiencia
             </h1>
             <p className="text-blue-100">
@@ -206,7 +206,7 @@ const Evaluanos = () => {
                     Enviando...
                   </span>
                 ) : (
-                  'Enviar Evaluación'
+                  'ENVIAR OPINIÓN'
                 )}
               </button>
             </form>

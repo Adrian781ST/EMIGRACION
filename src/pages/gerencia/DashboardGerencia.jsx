@@ -58,8 +58,8 @@ const DashboardGerencia = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
       <div className="bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600 text-white py-8 shadow-lg">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-3xl font-bold">
-            Panel de Gerencia
+          <h1 className="text-3xl font-bold uppercase tracking-wide">
+            PANEL DE GERENCIA
           </h1>
           <p className="text-purple-100 mt-2">
             Administración y supervisión de la plataforma
@@ -75,7 +75,7 @@ const DashboardGerencia = () => {
                 <span className="text-xl sm:text-2xl">👥</span>
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">Usuarios</h3>
+                <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate uppercase tracking-wide">Usuarios</h3>
                 <p className="text-gray-600 text-xs sm:text-sm truncate">Gestionar usuarios</p>
               </div>
             </div>
@@ -87,7 +87,7 @@ const DashboardGerencia = () => {
                 <span className="text-xl sm:text-2xl">🚨</span>
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">Emergencias</h3>
+                <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate uppercase tracking-wide">Emergencias</h3>
                 <p className="text-gray-600 text-xs sm:text-sm truncate">Ver emergencias</p>
               </div>
             </div>
@@ -99,7 +99,7 @@ const DashboardGerencia = () => {
                 <span className="text-xl sm:text-2xl">⭐</span>
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">Evaluaciones</h3>
+                <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate uppercase tracking-wide">Evaluaciones</h3>
                 <p className="text-gray-600 text-xs sm:text-sm truncate">Ver calificaciones</p>
               </div>
             </div>
@@ -111,7 +111,7 @@ const DashboardGerencia = () => {
                 <span className="text-xl sm:text-2xl">📋</span>
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">Novedades</h3>
+                <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate uppercase tracking-wide">Novedades</h3>
                 <p className="text-gray-600 text-xs sm:text-sm truncate">Gestionar noticias</p>
               </div>
             </div>
@@ -119,22 +119,22 @@ const DashboardGerencia = () => {
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Resumen General</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 uppercase tracking-wide">RESUMEN GENERAL</h2>
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
-              <p className="text-gray-600 text-xs sm:text-sm">Total Usuarios</p>
+              <p className="text-gray-600 text-xs sm:text-sm uppercase tracking-wide">Total Usuarios</p>
               <p className="text-2xl sm:text-3xl font-bold text-blue-600">{stats.totalUsuarios}</p>
             </div>
             <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
-              <p className="text-gray-600 text-xs sm:text-sm">Entidades</p>
+              <p className="text-gray-600 text-xs sm:text-sm uppercase tracking-wide">Entidades</p>
               <p className="text-2xl sm:text-3xl font-bold text-green-600">{stats.totalEntidades}</p>
             </div>
             <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
-              <p className="text-gray-600 text-xs sm:text-sm">Emergencias</p>
+              <p className="text-gray-600 text-xs sm:text-sm uppercase tracking-wide">Emergencias</p>
               <p className="text-2xl sm:text-3xl font-bold text-red-600">{stats.emergenciasActivas}</p>
             </div>
             <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
-              <p className="text-gray-600 text-xs sm:text-sm">Evaluaciones</p>
+              <p className="text-gray-600 text-xs sm:text-sm uppercase tracking-wide">Evaluaciones</p>
               <p className="text-2xl sm:text-3xl font-bold text-yellow-600">{stats.totalEvaluaciones}</p>
             </div>
           </div>
@@ -610,14 +610,14 @@ const EvaluacionesAdmin = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center mb-6">
-          <Link to="/gerencia" className="flex items-center text-purple-600 hover:text-purple-800 transition-colors">
+          <Link to="/gerencia" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors uppercase tracking-wide font-medium">
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Volver al Panel
           </Link>
         </div>
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6 sm:mb-8">Todas las Evaluaciones</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-blue-600 mb-6 sm:mb-8 uppercase tracking-wide">Todas las Evaluaciones</h1>
 
         {/* Mobile Card View */}
         <div className="lg:hidden space-y-4">
