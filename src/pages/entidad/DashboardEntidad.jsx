@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
@@ -428,7 +429,15 @@ const EmergenciasEntidad = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-2xl font-bold text-gray-800 mb-8">Emergencias Asignadas</h1>
+        <div className="flex items-center mb-6">
+          <Link to="/entidad/servicios" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            VOLVER
+          </Link>
+        </div>
+        <h1 className="text-2xl font-bold text-gray-800 mb-8">EMERGENCIAS ASIGNADAS</h1>
         
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-8">
@@ -581,6 +590,13 @@ const ServiciosEntidad = () => {
     tipo: 'SALUD'
   })
   const [submittingService, setSubmittingService] = useState(false)
+  
+  // Emergencias state
+  const [emergenciasAsignadas, setEmergenciasAsignadas] = useState([])
+  const [loadingEmergencias, setLoadingEmergencias] = useState(true)
+  const [showEvaluacionesModal, setShowEvaluacionesModal] = useState(false)
+  const [showPerfilModal, setShowPerfilModal] = useState(false)
+  const [evaluaciones, setEvaluaciones] = useState([])
 
   useEffect(() => {
     checkInstitutionProfile()
@@ -613,6 +629,7 @@ const ServiciosEntidad = () => {
         if (data.nombre && data.tipo) {
           setMode('services')
           fetchServicios()
+          fetchEmergenciasAsignadas()
         } else {
           setMode('setup')
         }
@@ -721,6 +738,55 @@ const ServiciosEntidad = () => {
       setServicios(data || [])
     } catch (error) {
       console.error('Error fetching servicios:', error)
+    }
+  }
+
+  const fetchEmergenciasAsignadas = async () => {
+    try {
+      const { data: entidadData } = await supabase
+        .from('entidades')
+        .select('id')
+        .eq('usuario_id', user.id)
+        .single()
+
+      if (entidadData) {
+        const { data, error } = await supabase
+          .from('emergencias')
+          .select('*, usuarios(nombre, email)')
+          .eq('entidad_id', entidadData.id)
+          .eq('estado', 'ASIGNADA')
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+        setEmergenciasAsignadas(data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching emergencias asignadas:', error)
+    } finally {
+      setLoadingEmergencias(false)
+    }
+  }
+
+  const fetchEvaluaciones = async () => {
+    try {
+      const { data: entidadData } = await supabase
+        .from('entidades')
+        .select('id')
+        .eq('usuario_id', user.id)
+        .single()
+
+      if (entidadData) {
+        const { data, error } = await supabase
+          .from('calificaciones')
+          .select('*, usuarios(nombre)')
+          .eq('entidad_id', entidadData.id)
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+        setEvaluaciones(data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching evaluaciones:', error)
     }
   }
 
@@ -1026,95 +1092,253 @@ const ServiciosEntidad = () => {
 
   // Services Management Mode
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 py-8">
-      <div className="max-w-6xl mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4">
         {/* Header */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <div className="flex items-center gap-4">
-            <div className={`w-16 h-16 bg-gradient-to-br ${getSectorColor(institutionProfile.tipo)} rounded-2xl flex items-center justify-center shadow-lg`}>
-              <span className="text-3xl">{getSectorIcon(institutionProfile.tipo)}</span>
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br ${getSectorColor(institutionProfile.tipo)} rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0`}>
+              <span className="text-2xl sm:text-3xl">{getSectorIcon(institutionProfile.tipo)}</span>
             </div>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-800">{institutionProfile.nombre}</h1>
-              <p className="text-gray-600">{institutionProfile.codigo_institucion && `Código: ${institutionProfile.codigo_institucion}`}</p>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-800 truncate">{institutionProfile.nombre}</h1>
+              <p className="text-gray-600 text-sm">{institutionProfile.codigo_institucion && `Código: ${institutionProfile.codigo_institucion}`}</p>
             </div>
             <button
               onClick={() => setMode('setup')}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all"
+              className="px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all text-sm sm:text-base flex items-center gap-2"
             >
-              ✏️ Editar Perfil
+              <span>✏️</span> <span className="hidden sm:inline">Editar Perfil</span>
             </button>
           </div>
         </div>
 
+        {/* Navigation Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
+          <Link to="/entidad/emergencias" className="bg-white rounded-lg sm:rounded-xl shadow-md p-3 sm:p-4 hover:shadow-lg transition-shadow">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-xl sm:text-2xl">🚨</span>
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-blue-600 text-xs sm:text-sm truncate uppercase tracking-wide">Emergencias</h3>
+                <p className="text-gray-600 text-xs truncate">Ver todas</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link to="/entidad/servicios" className="bg-white rounded-lg sm:rounded-xl shadow-md p-3 sm:p-4 hover:shadow-lg transition-shadow ring-2 ring-green-500">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-xl sm:text-2xl">🛠️</span>
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-blue-600 text-xs sm:text-sm truncate uppercase tracking-wide">Servicios</h3>
+                <p className="text-gray-600 text-xs truncate">Gestionar</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link to="/entidad/evaluaciones" onClick={(e) => { e.preventDefault(); fetchEvaluaciones(); setShowEvaluacionesModal(true); }} className="bg-white rounded-lg sm:rounded-xl shadow-md p-3 sm:p-4 hover:shadow-lg transition-shadow cursor-pointer">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-xl sm:text-2xl">⭐</span>
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-blue-600 text-xs sm:text-sm truncate uppercase tracking-wide">Evaluaciones</h3>
+                <p className="text-gray-600 text-xs truncate">Ver todas</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link to="/perfil" onClick={(e) => { e.preventDefault(); setShowPerfilModal(true); }} className="bg-white rounded-lg sm:rounded-xl shadow-md p-3 sm:p-4 hover:shadow-lg transition-shadow cursor-pointer">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-xl sm:text-2xl">👤</span>
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-blue-600 text-xs sm:text-sm truncate uppercase tracking-wide">Perfil</h3>
+                <p className="text-gray-600 text-xs truncate">Editar</p>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Emergencias Asignadas Section */}
+        {emergenciasAsignadas.length > 0 && (
+          <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-xl shadow-lg p-4 mb-4 sm:mb-8">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                <span>🚨</span> EMERGENCIAS ASIGNADAS
+              </h2>
+              <div className="flex items-center gap-2">
+                <Link to="/entidad/servicios" className="text-white/80 hover:text-white text-xs sm:text-sm">
+                  VER TODAS →
+                </Link>
+              </div>
+            </div>
+            <div className="grid gap-2">
+              {emergenciasAsignadas.slice(0, 3).map((emergencia) => (
+                <div key={emergencia.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-3 flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-medium text-sm truncate">{emergencia.usuarios?.nombre}</p>
+                    <p className="text-white/70 text-xs truncate">{emergencia.descripcion}</p>
+                  </div>
+                  <span className="text-white/80 text-xs ml-2 flex-shrink-0">
+                    {new Date(emergencia.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow-md p-4 flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-2xl">🛠️</span>
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-4 sm:mb-8">
+          <div className="bg-white rounded-lg sm:rounded-xl shadow-md p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-xl sm:text-2xl">🛠️</span>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-800">{servicios.length}</p>
-              <p className="text-sm text-gray-600">Servicios Activos</p>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-md p-4 flex items-center gap-4">
-            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-              <span className="text-2xl">✅</span>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-800">{servicios.filter(s => s.habilitado).length}</p>
-              <p className="text-sm text-gray-600">Habilitados</p>
+            <div className="min-w-0">
+              <p className="text-xl sm:text-2xl font-bold text-gray-800">{servicios.length}</p>
+              <p className="text-gray-600 text-xs sm:text-sm truncate">Servicios</p>
             </div>
           </div>
-          <div className="bg-white rounded-xl shadow-md p-4 flex items-center gap-4">
-            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-              <span className="text-2xl">📋</span>
+          <div className="bg-white rounded-lg sm:rounded-xl shadow-md p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-xl sm:text-2xl">📋</span>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-800">{institutionProfile.tipo}</p>
-              <p className="text-sm text-gray-600">Sector</p>
+            <div className="min-w-0">
+              <p className="text-xl sm:text-2xl font-bold text-gray-800">{institutionProfile.tipo}</p>
+              <p className="text-gray-600 text-xs sm:text-sm truncate">Sector</p>
             </div>
           </div>
         </div>
 
+        {/* Evaluaciones Modal */}
+        {showEvaluacionesModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-blue-600 uppercase tracking-wide">MIS EVALUACIONES</h2>
+                  <button onClick={() => setShowEvaluacionesModal(false)} className="text-gray-400 hover:text-gray-600">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                {evaluaciones.length === 0 ? (
+                  <p className="text-gray-600 text-center py-8">No hay evaluaciones aún</p>
+                ) : (
+                  <div className="space-y-3">
+                    {evaluaciones.map((evaluacion) => (
+                      <div key={evaluacion.id} className="border border-gray-200 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-semibold text-gray-800">{evaluacion.usuarios?.nombre}</span>
+                          <span className="text-yellow-500">{'★'.repeat(evaluacion.calificacion)}</span>
+                        </div>
+                        <p className="text-gray-600 text-sm">{evaluacion.comentario}</p>
+                        <p className="text-gray-400 text-xs mt-2">{new Date(evaluacion.created_at).toLocaleDateString()}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Perfil Modal */}
+        {showPerfilModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-blue-600 uppercase tracking-wide">MI PERFIL</h2>
+                  <button onClick={() => setShowPerfilModal(false)} className="text-gray-400 hover:text-gray-600">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-16 h-16 bg-gradient-to-br ${getSectorColor(institutionProfile.tipo)} rounded-2xl flex items-center justify-center`}>
+                      <span className="text-3xl">{getSectorIcon(institutionProfile.tipo)}</span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">{institutionProfile.nombre}</h3>
+                      <p className="text-gray-600">{institutionProfile.codigo_institucion}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-gray-500 text-xs uppercase">Sector</p>
+                      <p className="font-semibold">{institutionProfile.tipo}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 text-xs uppercase">Teléfono</p>
+                      <p className="font-semibold">{institutionProfile.telefono || 'No registrado'}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-gray-500 text-xs uppercase">Email</p>
+                      <p className="font-semibold">{institutionProfile.email || 'No registrado'}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-gray-500 text-xs uppercase">Dirección</p>
+                      <p className="font-semibold">{institutionProfile.direccion || 'No registrada'}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => { setShowPerfilModal(false); setMode('setup'); }}
+                    className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all"
+                  >
+                    EDITAR PERFIL
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Add Service Form */}
         {showServiceForm && (
-          <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 animate-fade-in">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                <span>➕</span> Agregar Nuevo Servicio
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 mb-4 sm:mb-8 animate-fade-in">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 flex items-center gap-2">
+                <span>➕</span> AGREGAR SERVICIO
               </h2>
               <button
                 onClick={() => setShowServiceForm(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 text-xl"
               >
                 ✕
               </button>
             </div>
-            <form onSubmit={handleAddServicio} className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+            <form onSubmit={handleAddServicio} className="space-y-3 sm:space-y-4">
+              <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del Servicio</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">Nombre</label>
                   <input
                     type="text"
                     value={newServicio.nombre}
                     onChange={(e) => setNewServicio({ ...newServicio, nombre: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="Ej: Consulta Médica General"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                    placeholder="Ej: Consulta Médica"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Servicio</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">Tipo</label>
                   <select
                     value={newServicio.tipo}
                     onChange={(e) => setNewServicio({ ...newServicio, tipo: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   >
                     <option value="SALUD">Salud</option>
                     <option value="EDUCACION">Educación</option>
-                    <option value="LEGAL">Asesoría Legal</option>
+                    <option value="LEGAL">Legal</option>
                     <option value="VIVIENDA">Vivienda</option>
                     <option value="EMPLEO">Empleo</option>
                     <option value="ALIMENTACION">Alimentación</option>
@@ -1123,30 +1347,30 @@ const ServiciosEntidad = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">Descripción</label>
                 <textarea
                   value={newServicio.descripcion}
                   onChange={(e) => setNewServicio({ ...newServicio, descripcion: e.target.value })}
-                  rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Describe detalladamente el servicio que ofreces..."
+                  rows={2}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                  placeholder="Describe el servicio..."
                   required
                 />
               </div>
-              <div className="flex gap-4">
+              <div className="flex gap-2 sm:gap-4">
                 <button
                   type="submit"
                   disabled={submittingService}
-                  className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-xl font-semibold hover:from-green-600 hover:to-green-700 disabled:opacity-50 transition-all"
+                  className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-2 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:from-green-600 hover:to-green-700 disabled:opacity-50 transition-all text-sm sm:text-base"
                 >
-                  {submittingService ? 'Guardando...' : '💾 Guardar Servicio'}
+                  {submittingService ? 'Guardando...' : '💾 GUARDAR'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowServiceForm(false)}
-                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all"
+                  className="px-4 sm:px-6 py-2 sm:py-3 bg-gray-100 text-gray-700 rounded-lg sm:rounded-xl font-semibold hover:bg-gray-200 transition-all text-sm sm:text-base"
                 >
-                  Cancelar
+                  CANCELAR
                 </button>
               </div>
             </form>
@@ -1154,61 +1378,59 @@ const ServiciosEntidad = () => {
         )}
 
         {/* Services List */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              <span>🛠️</span> Mis Servicios
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 flex items-center gap-2">
+              <span>🛠️</span> MIS SERVICIOS
             </h2>
             <button
               onClick={() => setShowServiceForm(true)}
-              className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all shadow-md flex items-center gap-2"
+              className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all shadow-md flex items-center gap-2 text-sm sm:text-base"
             >
-              <span>+</span> Agregar Servicio
+              <span>+</span> AGREGAR
             </button>
           </div>
 
           {servicios.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-4xl">📭</span>
+            <div className="text-center py-8 sm:py-12">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <span className="text-3xl sm:text-4xl">📭</span>
               </div>
-              <p className="text-gray-600 mb-4">No tienes servicios registrados aún</p>
+              <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base">No tienes servicios registrados</p>
               <button
                 onClick={() => setShowServiceForm(true)}
-                className="text-green-600 font-semibold hover:text-green-700"
+                className="text-green-600 font-semibold hover:text-green-700 text-sm sm:text-base"
               >
-                + Agregar tu primer servicio
+                + AGREGAR TU PRIMER SERVICIO
               </button>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
               {servicios.map((servicio) => (
-                <div key={servicio.id} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 bg-gradient-to-br ${getSectorColor(servicio.tipo)} rounded-lg flex items-center justify-center`}>
-                        <span className="text-lg">{getSectorIcon(servicio.tipo)}</span>
+                <div key={servicio.id} className="border border-gray-200 rounded-lg sm:rounded-xl p-3 sm:p-5 hover:shadow-md transition-shadow">
+                  <div className="flex justify-between items-start mb-2 sm:mb-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br ${getSectorColor(servicio.tipo)} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                        <span className="text-sm sm:text-lg">{getSectorIcon(servicio.tipo)}</span>
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-800">{servicio.nombre}</h3>
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          servicio.habilitado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {servicio.habilitado ? '✅ Activo' : '❌ Inhabilitado'}
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">{servicio.nombre}</h3>
+                        <span className={`text-xs px-2 py-0.5 rounded-full inline-block ${servicio.habilitado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                          {servicio.habilitado ? '✅ ACTIVO' : '❌ INHABILITADO'}
                         </span>
                       </div>
                     </div>
                     <button
                       onClick={() => handleDeleteServicio(servicio.id)}
-                      className="text-red-400 hover:text-red-600 transition-colors"
-                      title="Eliminar servicio"
+                      className="text-red-400 hover:text-red-600 transition-colors flex-shrink-0"
+                      title="Eliminar"
                     >
                       🗑️
                     </button>
                   </div>
-                  <p className="text-gray-600 text-sm">{servicio.descripcion}</p>
-                  <p className="text-gray-400 text-xs mt-3">
-                    Registrado: {new Date(servicio.created_at).toLocaleDateString()}
+                  <p className="text-gray-600 text-xs sm:text-sm line-clamp-2">{servicio.descripcion}</p>
+                  <p className="text-gray-400 text-xs mt-2">
+                    {new Date(servicio.created_at).toLocaleDateString()}
                   </p>
                 </div>
               ))}

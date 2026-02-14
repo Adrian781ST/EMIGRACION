@@ -111,10 +111,10 @@ const Home = () => {
           )}
           {user && userProfile?.tipo === 'ENTIDAD' && (
             <Link
-              to="/entidad/emergencias"
+              to="/entidad/servicios"
               className="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-50 uppercase"
             >
-              Ir a mi Panel
+              VER MIS SERVICIOS
             </Link>
           )}
           {user && userProfile?.tipo === 'GERENCIA' && (

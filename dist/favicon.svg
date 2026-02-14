@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb"/>
+      <stop offset="100%" style="stop-color:#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="url(#bg)"/>
+  <!-- Person silhouette with suitcase -->
+  <circle cx="50" cy="32" r="10" fill="white"/>
+  <path d="M50 44 C38 44 32 50 32 62 L32 70 L40 70 L40 85 L60 85 L60 70 L68 70 L68 62 C68 50 62 44 50 44" fill="white"/>
+  <!-- Suitcase handle -->
+  <rect x="44" y="60" width="12" height="8" rx="2" fill="none" stroke="white" stroke-width="2"/>
+</svg>

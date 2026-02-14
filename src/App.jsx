@@ -56,6 +56,11 @@ const AppRoutes = () => {
         } />
         
         {/* Rutas Entidad - Directas */}
+        <Route path="/entidad" element={
+          <ProtectedRoute roles={['ENTIDAD']}>
+            <Navigate to="/entidad/servicios" replace />
+          </ProtectedRoute>
+        } />
         <Route path="/entidad/emergencias" element={
           <ProtectedRoute roles={['ENTIDAD']}>
             <EmergenciasEntidad />
