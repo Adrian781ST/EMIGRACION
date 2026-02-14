@@ -15,6 +15,7 @@ import DashboardMigrante from './pages/migrante/DashboardMigrante'
 import { EmergenciasMigrante, NovedadesPage } from './pages/migrante/DashboardMigrante'
 
 // Import Entidad components
+import DashboardEntidad from './pages/entidad/DashboardEntidad'
 import { EmergenciasEntidad, ServiciosEntidad, EvaluacionesEntidad, NovedadesEntidad } from './pages/entidad/DashboardEntidad'
 
 const AppRoutes = () => {
@@ -55,20 +56,25 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } />
         
-        {/* Rutas Entidad - Directas */}
+        {/* Rutas Entidad */}
         <Route path="/entidad" element={
           <ProtectedRoute roles={['ENTIDAD']}>
-            <Navigate to="/entidad/servicios" replace />
+            <DashboardEntidad />
+          </ProtectedRoute>
+        } />
+        <Route path="/entidad/dashboard" element={
+          <ProtectedRoute roles={['ENTIDAD']}>
+            <Navigate to="/entidad" replace />
           </ProtectedRoute>
         } />
         <Route path="/entidad/emergencias" element={
           <ProtectedRoute roles={['ENTIDAD']}>
-            <EmergenciasEntidad />
+            <Navigate to="/entidad" replace />
           </ProtectedRoute>
         } />
         <Route path="/entidad/servicios" element={
           <ProtectedRoute roles={['ENTIDAD']}>
-            <ServiciosEntidad />
+            <Navigate to="/entidad" replace />
           </ProtectedRoute>
         } />
         <Route path="/entidad/evaluaciones" element={

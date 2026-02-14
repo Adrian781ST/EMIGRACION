@@ -60,8 +60,8 @@ const Navbar = () => {
                 )}
                 {userProfile?.tipo === 'ENTIDAD' && (
                   <>
-                    <NavLink to="/entidad/emergencias">EMERGENCIAS</NavLink>
-                    <NavLink to="/entidad/servicios">SERVICIOS</NavLink>
+                    <NavLink to="/entidad" state={{ tab: 'emergencias' }}>EMERGENCIAS</NavLink>
+                    <NavLink to="/entidad" state={{ tab: 'servicios' }}>SERVICIOS</NavLink>
                     <NavLink to="/entidad/novedades">NOVEDADES</NavLink>
                   </>
                 )}
@@ -153,10 +153,10 @@ const Navbar = () => {
                   )}
                   {userProfile?.tipo === 'ENTIDAD' && (
                     <>
-                      <Link to="/entidad/emergencias" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
+                      <Link to="/entidad" state={{ tab: 'emergencias' }} onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
                         Emergencias
                       </Link>
-                      <Link to="/entidad/servicios" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
+                      <Link to="/entidad" state={{ tab: 'servicios' }} onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
                         Servicios
                       </Link>
                       <Link to="/entidad/novedades" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">

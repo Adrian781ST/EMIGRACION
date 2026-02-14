@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
@@ -61,7 +61,7 @@ const StarFieldBackground = () => {
 }
 
 // Componente para mostrar Novedades en Entidad
-const NovedadesEntidad = () => {
+const NovedadesEntidad = ({ hideVolver = false }) => {
   const [novedades, setNovedades] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -103,7 +103,9 @@ const NovedadesEntidad = () => {
     <div className="bg-white rounded-xl shadow-md p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-800">📋 Novedades</h2>
-        <span className="text-gray-500 text-sm">Noticias importantes</span>
+        {!hideVolver && (
+          <Link to="/entidad" className="text-blue-600 hover:text-blue-800 text-sm font-medium uppercase">← VOLVER</Link>
+        )}
       </div>
       
       {novedades.length === 0 ? (
@@ -140,6 +142,35 @@ const NovedadesEntidad = () => {
 
 const DashboardEntidad = () => {
   const { userProfile } = useAuth()
+  const location = useLocation()
+
+  // Define default values to prevent ReferenceError
+  const servicios = []
+  const emergenciasAsignadas = []
+  const promedio = 0
+  const setActiveTab = () => {}
+  const navigate = () => {}
+  const fetchTodasEmergencias = () => {}
+  const fetchEvaluaciones = () => {}
+  const setShowEvaluacionesModal = () => {}
+  const setShowPerfilModal = () => {}
+  const setShowServiceForm = () => {}
+
+  // Set active tab based on navigation state
+  useEffect(() => {
+    if (location.state?.tab === 'emergencias') {
+      setActiveTab('emergencias')
+      if (typeof fetchTodasEmergencias === 'function') {
+        fetchTodasEmergencias()
+      }
+    } else if (location.state?.tab === 'servicios') {
+      setActiveTab('servicios')
+    }
+    // Clear the state after reading it
+    if (location.state) {
+      window.history.replaceState({}, document.title)
+    }
+  }, [location])
 
   const getSectorLabel = (tipo) => {
     const labels = {
@@ -180,6 +211,20 @@ const DashboardEntidad = () => {
     return colors[tipo] || 'from-gray-500 to-gray-600'
   }
 
+  const getTipoServicioIcon = (tipo) => {
+    const icons = {
+      'SALUD': '🏥',
+      'EDUCACION': '📚',
+      'LEGAL': '⚖️',
+      'VIVIENDA': '🏠',
+      'EMPLEO': '💼',
+      'ALIMENTACION': '🍽️',
+      'TRANSPORTE': '🚌',
+      'OTROS': '📋'
+    }
+    return icons[tipo] || '📋'
+  }
+
   return (
     <div className="min-h-screen relative">
       <StarFieldBackground />
@@ -189,99 +234,71 @@ const DashboardEntidad = () => {
       
       {/* Sector Banner */}
       <div className="relative z-20">
-        {userProfile?.tipo && (
-          <div className={`bg-gradient-to-r ${getSectorColor(userProfile.tipo)} text-white py-6 shadow-lg`}>
-            <div className="max-w-7xl mx-auto px-4">
-              <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-4xl">
-                  {getSectorIcon(userProfile.tipo)}
-                </div>
-                <div>
-                  <p className="text-white/80 text-sm uppercase tracking-wide">Tu sector</p>
-                  <h2 className="text-2xl font-bold">{getSectorLabel(userProfile.tipo)}</h2>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         <div className="bg-gradient-to-r from-green-600 via-green-500 to-teal-600 text-white py-8 shadow-lg">
-          <div className="max-w-7xl mx-auto px-4">
-            <h1 className="text-3xl font-bold">
-              Panel de {userProfile?.nombre || 'Entidad'}
+          <div className="max-w-7xl mx-auto px-4 text-center">
+            <h1 className="text-3xl font-bold uppercase">
+              PANEL DE {userProfile?.nombre?.toUpperCase() || 'ENTIDAD'}
             </h1>
-            <p className="text-green-100 mt-2">
+            <p className="text-green-100 mt-2 uppercase">
               Gestiona tus servicios y emergencias
             </p>
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Link to="emergencias" className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                <span className="text-2xl">🚨</span>
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+          <div onClick={() => { setShowEmergenciasModal(true); }} className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow text-center cursor-pointer">
+            <div className="flex flex-col items-center">
+              <div className="w-12 sm:w-16 h-12 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mb-3">
+                <span className="text-2xl sm:text-3xl">🚨</span>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800">Emergencias</h3>
-                <p className="text-gray-600 text-sm">Atender solicitudes</p>
+                <h3 className="font-semibold text-green-600 uppercase text-sm sm:text-base">Emergencias</h3>
+                <p className="text-gray-600 text-xs sm:text-sm">{emergenciasAsignadas?.length || 0} pendientes</p>
               </div>
             </div>
-          </Link>
+          </div>
 
-          <Link to="servicios" className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-2xl">🛠️</span>
+          <div onClick={() => { setShowServiciosModal(true); }} className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow text-center cursor-pointer">
+            <div className="flex flex-col items-center">
+              <div className="w-12 sm:w-16 h-12 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+                <span className="text-2xl sm:text-3xl">🛠️</span>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800">Servicios</h3>
-                <p className="text-gray-600 text-sm">Gestionar servicios</p>
+                <h3 className="font-semibold text-green-600 uppercase text-sm sm:text-base">Servicios</h3>
+                <p className="text-gray-600 text-xs sm:text-sm">{servicios?.length || 0} activos</p>
               </div>
             </div>
-          </Link>
+          </div>
 
-          <Link to="evaluaciones" className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                <span className="text-2xl">⭐</span>
+          <div onClick={() => { setShowEvaluacionesModal(true); }} className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow text-center cursor-pointer">
+            <div className="flex flex-col items-center">
+              <div className="w-12 sm:w-16 h-12 sm:h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-3">
+                <span className="text-2xl sm:text-3xl">⭐</span>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800">Evaluaciones</h3>
-                <p className="text-gray-600 text-sm">Ver calificaciones</p>
+                <h3 className="font-semibold text-green-600 uppercase text-sm sm:text-base">Evaluaciones</h3>
+                <p className="text-gray-600 text-xs sm:text-sm">Ver calificaciones</p>
               </div>
             </div>
-          </Link>
+          </div>
 
-          <Link to="/perfil" className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                <span className="text-2xl">👤</span>
+          <div onClick={() => { setShowPerfilModal(true); }} className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow text-center cursor-pointer">
+            <div className="flex flex-col items-center">
+              <div className="w-12 sm:w-16 h-12 sm:h-16 bg-purple-100 rounded-full flex items-center justify-center mb-3">
+                <span className="text-2xl sm:text-3xl">👤</span>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800">Perfil</h3>
-                <p className="text-gray-600 text-sm">Editar información</p>
+                <h3 className="font-semibold text-green-600 uppercase text-sm sm:text-base">Perfil</h3>
+                <p className="text-gray-600 text-xs sm:text-sm">Editar información</p>
               </div>
             </div>
-          </Link>
-
-          <Link to="novedades" className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center">
-                <span className="text-2xl">📋</span>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">Novedades</h3>
-                <p className="text-gray-600 text-sm">Ver noticias</p>
-              </div>
-            </div>
-          </Link>
+          </div>
         </div>
 
-        {/* Novedades Section */}
+        {/* Novedades Section - Always visible in main panel */}
         <div className="mb-8">
-          <NovedadesEntidad />
+          <NovedadesEntidad hideVolver={true} />
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-6">
@@ -289,19 +306,19 @@ const DashboardEntidad = () => {
           <div className="grid grid-cols-3 md:grid-cols-3 gap-4">
             <div className="p-4 bg-gray-50 rounded-lg">
               <p className="text-gray-600 text-sm">Emergencias Pendientes</p>
-              <p className="text-3xl font-bold text-gray-800" id="pending-count">-</p>
+              <p className="text-3xl font-bold text-gray-800" id="pending-count">{emergenciasAsignadas?.length || 0}</p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
               <p className="text-gray-600 text-sm">Servicios Activos</p>
-              <p className="text-3xl font-bold text-gray-800" id="services-count">-</p>
+              <p className="text-3xl font-bold text-gray-800" id="services-count">{servicios?.length || 0}</p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
               <p className="text-gray-600 text-sm">Calificación Promedio</p>
-              <p className="text-3xl font-bold text-gray-800" id="rating-avg">-</p>
+              <p className="text-3xl font-bold text-gray-800" id="rating-avg">{promedio || 0} ⭐</p>
             </div>
           </div>
         </div>
-      </div>
+        </div>
       </div>
     </div>
   )
@@ -372,6 +389,25 @@ const EmergenciasEntidad = () => {
     }
   }
 
+  const handleAtenderDesdeModal = async (id) => {
+    try {
+      const { error } = await supabase
+        .from('emergencias')
+        .update({ 
+          estado: 'ATENDIDA',
+          fecha_atencion: new Date().toISOString()
+        })
+        .eq('id', id)
+
+      if (error) throw error
+
+      toast.success('Emergencia marcada como atendida')
+      fetchTodasEmergencias()
+    } catch (error) {
+      toast.error(error.message || 'Error al atender emergencia')
+    }
+  }
+
   const handleActualizarSeguimiento = async (e) => {
     e.preventDefault()
     try {
@@ -430,14 +466,14 @@ const EmergenciasEntidad = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center mb-6">
-          <Link to="/entidad/servicios" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+          <Link to="/entidad" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             VOLVER
           </Link>
         </div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-8">EMERGENCIAS ASIGNADAS</h1>
+        <h1 className="text-2xl font-bold text-green-600 mb-8">EMERGENCIAS ASIGNADAS</h1>
         
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-8">
@@ -596,7 +632,13 @@ const ServiciosEntidad = () => {
   const [loadingEmergencias, setLoadingEmergencias] = useState(true)
   const [showEvaluacionesModal, setShowEvaluacionesModal] = useState(false)
   const [showPerfilModal, setShowPerfilModal] = useState(false)
+  const [showEmergenciasModal, setShowEmergenciasModal] = useState(false)
+  const [showServiciosModal, setShowServiciosModal] = useState(false)
   const [evaluaciones, setEvaluaciones] = useState([])
+  const [todasEmergencias, setTodasEmergencias] = useState([])
+  const [mostrarTodasEmergencias, setMostrarTodasEmergencias] = useState(false)
+  const [activeTab, setActiveTab] = useState('inicio') // 'inicio', 'servicios' or 'emergencias'
+  const navigate = useNavigate()
 
   useEffect(() => {
     checkInstitutionProfile()
@@ -754,7 +796,7 @@ const ServiciosEntidad = () => {
           .from('emergencias')
           .select('*, usuarios(nombre, email)')
           .eq('entidad_id', entidadData.id)
-          .eq('estado', 'ASIGNADA')
+          .neq('estado', 'ATENDIDA')
           .order('created_at', { ascending: false })
 
         if (error) throw error
@@ -787,6 +829,29 @@ const ServiciosEntidad = () => {
       }
     } catch (error) {
       console.error('Error fetching evaluaciones:', error)
+    }
+  }
+
+  const fetchTodasEmergencias = async () => {
+    try {
+      const { data: entidadData } = await supabase
+        .from('entidades')
+        .select('id')
+        .eq('usuario_id', user.id)
+        .single()
+
+      if (entidadData) {
+        const { data, error } = await supabase
+          .from('emergencias')
+          .select('*, usuarios(nombre, email)')
+          .eq('entidad_id', entidadData.id)
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+        setTodasEmergencias(data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching emergencias:', error)
     }
   }
 
@@ -1104,37 +1169,31 @@ const ServiciosEntidad = () => {
               <h1 className="text-xl sm:text-2xl font-bold text-gray-800 truncate">{institutionProfile.nombre}</h1>
               <p className="text-gray-600 text-sm">{institutionProfile.codigo_institucion && `Código: ${institutionProfile.codigo_institucion}`}</p>
             </div>
-            <button
-              onClick={() => setMode('setup')}
-              className="px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all text-sm sm:text-base flex items-center gap-2"
-            >
-              <span>✏️</span> <span className="hidden sm:inline">Editar Perfil</span>
-            </button>
           </div>
         </div>
 
         {/* Navigation Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
-          <Link to="/entidad/emergencias" className="bg-white rounded-lg sm:rounded-xl shadow-md p-3 sm:p-4 hover:shadow-lg transition-shadow">
+          <Link to="/entidad" state={{ tab: 'emergencias' }} onClick={(e) => { e.preventDefault(); setActiveTab('emergencias'); }} className={`bg-white rounded-lg sm:rounded-xl shadow-md p-3 sm:p-4 hover:shadow-lg transition-shadow cursor-pointer ${activeTab === 'emergencias' ? 'ring-2 ring-blue-500' : ''}`}>
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                 <span className="text-xl sm:text-2xl">🚨</span>
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-blue-600 text-xs sm:text-sm truncate uppercase tracking-wide">Emergencias</h3>
-                <p className="text-gray-600 text-xs truncate">Ver todas</p>
+                <h3 className="font-semibold text-blue-600 text-xs sm:text-sm uppercase tracking-wide break-words">Emergencias</h3>
+                <p className="text-gray-600 text-xs break-words">{emergenciasAsignadas?.length || 0} pendientes</p>
               </div>
             </div>
           </Link>
 
-          <Link to="/entidad/servicios" className="bg-white rounded-lg sm:rounded-xl shadow-md p-3 sm:p-4 hover:shadow-lg transition-shadow ring-2 ring-green-500">
+          <Link to="/entidad" state={{ tab: 'servicios' }} onClick={(e) => { e.preventDefault(); setActiveTab('servicios'); }} className={`bg-white rounded-lg sm:rounded-xl shadow-md p-3 sm:p-4 hover:shadow-lg transition-shadow cursor-pointer ${activeTab === 'servicios' ? 'ring-2 ring-green-500' : ''}`}>
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                 <span className="text-xl sm:text-2xl">🛠️</span>
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-blue-600 text-xs sm:text-sm truncate uppercase tracking-wide">Servicios</h3>
-                <p className="text-gray-600 text-xs truncate">Gestionar</p>
+                <h3 className="font-semibold text-blue-600 text-xs sm:text-sm uppercase tracking-wide break-words">Servicios</h3>
+                <p className="text-gray-600 text-xs break-words">{servicios?.length || 0} activos</p>
               </div>
             </div>
           </Link>
@@ -1145,8 +1204,8 @@ const ServiciosEntidad = () => {
                 <span className="text-xl sm:text-2xl">⭐</span>
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-blue-600 text-xs sm:text-sm truncate uppercase tracking-wide">Evaluaciones</h3>
-                <p className="text-gray-600 text-xs truncate">Ver todas</p>
+                <h3 className="font-semibold text-blue-600 text-xs sm:text-sm uppercase tracking-wide break-words">Evaluaciones</h3>
+                <p className="text-gray-600 text-xs break-words">Ver todas</p>
               </div>
             </div>
           </Link>
@@ -1157,28 +1216,28 @@ const ServiciosEntidad = () => {
                 <span className="text-xl sm:text-2xl">👤</span>
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-blue-600 text-xs sm:text-sm truncate uppercase tracking-wide">Perfil</h3>
-                <p className="text-gray-600 text-xs truncate">Editar</p>
+                <h3 className="font-semibold text-blue-600 text-xs sm:text-sm uppercase tracking-wide break-words">Perfil</h3>
+                <p className="text-gray-600 text-xs break-words">Editar</p>
               </div>
             </div>
           </Link>
         </div>
 
         {/* Emergencias Asignadas Section */}
-        {emergenciasAsignadas.length > 0 && (
+        {emergenciasAsignadas?.length > 0 && (
           <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-xl shadow-lg p-4 mb-4 sm:mb-8">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+              <h2 className="text-lg sm:text-xl font-bold text-green-600 uppercase flex items-center gap-2">
                 <span>🚨</span> EMERGENCIAS ASIGNADAS
               </h2>
               <div className="flex items-center gap-2">
-                <Link to="/entidad/servicios" className="text-white/80 hover:text-white text-xs sm:text-sm">
+                <Link to="/entidad" className="text-white/80 hover:text-white text-xs sm:text-sm">
                   VER TODAS →
                 </Link>
               </div>
             </div>
             <div className="grid gap-2">
-              {emergenciasAsignadas.slice(0, 3).map((emergencia) => (
+              {emergenciasAsignadas?.slice(0, 3).map((emergencia) => (
                 <div key={emergencia.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-3 flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <p className="text-white font-medium text-sm truncate">{emergencia.usuarios?.nombre}</p>
@@ -1194,16 +1253,29 @@ const ServiciosEntidad = () => {
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-4 sm:mb-8">
-          <div className="bg-white rounded-lg sm:rounded-xl shadow-md p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-8">
+          <Link to="/entidad" state={{ tab: 'servicios' }} onClick={(e) => { e.preventDefault(); setActiveTab('servicios'); }}
+            className="bg-white rounded-lg sm:rounded-xl shadow-md p-3 sm:p-4 flex items-center gap-2 sm:gap-3 cursor-pointer hover:shadow-lg transition-shadow"
+          >
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-xl sm:text-2xl">🛠️</span>
             </div>
             <div className="min-w-0">
-              <p className="text-xl sm:text-2xl font-bold text-gray-800">{servicios.length}</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-800">{servicios?.length || 0}</p>
               <p className="text-gray-600 text-xs sm:text-sm truncate">Servicios</p>
             </div>
-          </div>
+          </Link>
+          <Link to="/entidad" state={{ tab: 'emergencias' }} onClick={(e) => { e.preventDefault(); setActiveTab('emergencias'); }}
+            className="bg-white rounded-lg sm:rounded-xl shadow-md p-3 sm:p-4 flex items-center gap-2 sm:gap-3 cursor-pointer hover:shadow-lg transition-shadow"
+          >
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-xl sm:text-2xl">🚨</span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-xl sm:text-2xl font-bold text-gray-800">{emergenciasAsignadas?.length || 0}</p>
+              <p className="text-gray-600 text-xs sm:text-sm truncate">Emergencias</p>
+            </div>
+          </Link>
           <div className="bg-white rounded-lg sm:rounded-xl shadow-md p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-xl sm:text-2xl">📋</span>
@@ -1221,7 +1293,7 @@ const ServiciosEntidad = () => {
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-blue-600 uppercase tracking-wide">MIS EVALUACIONES</h2>
+                  <h2 className="text-xl font-bold text-green-600 uppercase tracking-wide">MIS EVALUACIONES</h2>
                   <button onClick={() => setShowEvaluacionesModal(false)} className="text-gray-400 hover:text-gray-600">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -1249,13 +1321,62 @@ const ServiciosEntidad = () => {
           </div>
         )}
 
+        {/* Emergencias Modal */}
+        {showEmergenciasModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-green-600 uppercase tracking-wide">MIS EMERGENCIAS</h2>
+                  <button onClick={() => setShowEmergenciasModal(false)} className="text-gray-400 hover:text-gray-600">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                {todasEmergencias.length === 0 ? (
+                  <p className="text-gray-600 text-center py-8">No hay emergencias registradas</p>
+                ) : (
+                  <div className="space-y-3">
+                    {todasEmergencias.map((emergencia) => (
+                      <div key={emergencia.id} className={`border-2 rounded-lg p-3 ${emergencia.prioridad === 'URGENTE' ? 'border-red-500 bg-red-50' : emergencia.prioridad === 'NORMAL' ? 'border-gray-300 bg-gray-50' : 'border-blue-200 bg-blue-50'}`}>
+                        <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
+                          <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded">{emergencia.tipo}</span>
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded ${emergencia.estado === 'ATENDIDA' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{emergencia.estado}</span>
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded ${emergencia.prioridad === 'URGENTE' ? 'bg-red-600 text-white' : emergencia.prioridad === 'NORMAL' ? 'bg-gray-500 text-white' : 'bg-blue-500 text-white'}`}>{emergencia.prioridad}</span>
+                        </div>
+                        <p className="text-gray-800 text-sm mb-2">{emergencia.descripcion}</p>
+                        {emergencia.direccion && (
+                          <p className="text-gray-600 text-xs mb-2">📍 {emergencia.direccion}</p>
+                        )}
+                        <div className="border-t border-gray-200 pt-2 mt-2">
+                          <p className="text-xs text-gray-500">Solicitante: {emergencia.usuarios?.nombre}</p>
+                          <p className="text-xs text-gray-400">{new Date(emergencia.created_at).toLocaleString()}</p>
+                        </div>
+                        {emergencia.estado !== 'ATENDIDA' && (
+                          <button
+                            onClick={() => handleAtenderDesdeModal(emergencia.id)}
+                            className="mt-3 w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                          >
+                            ✅ Marcar como atendida
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Perfil Modal */}
         {showPerfilModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-blue-600 uppercase tracking-wide">MI PERFIL</h2>
+                  <h2 className="text-xl font-bold text-green-600 uppercase tracking-wide">MI PERFIL</h2>
                   <button onClick={() => setShowPerfilModal(false)} className="text-gray-400 hover:text-gray-600">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -1302,11 +1423,60 @@ const ServiciosEntidad = () => {
           </div>
         )}
 
+        {/* Servicios Modal */}
+        {showServiciosModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-green-600 uppercase tracking-wide">MIS SERVICIOS</h2>
+                  <button onClick={() => setShowServiciosModal(false)} className="text-gray-400 hover:text-gray-600">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <button
+                  onClick={() => { setShowServiciosModal(false); setShowServiceForm(true); }}
+                  className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-all mb-4"
+                >
+                  ➕ AGREGAR SERVICIO
+                </button>
+                {servicios.length === 0 ? (
+                  <p className="text-gray-600 text-center py-8">No hay servicios registrados</p>
+                ) : (
+                  <div className="space-y-3">
+                    {servicios.map((servicio) => (
+                      <div key={servicio.id} className="border border-gray-200 rounded-lg p-3 flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-lg">{getTipoServicioIcon(servicio.tipo)}</span>
+                            <span className="font-semibold text-gray-800">{servicio.nombre}</span>
+                          </div>
+                          <p className="text-gray-600 text-sm">{servicio.descripcion}</p>
+                          <p className="text-gray-500 text-xs mt-1">{servicio.tipo}</p>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteServicio(servicio.id)}
+                          className="text-red-500 hover:text-red-700 p-2"
+                          title="Eliminar servicio"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Add Service Form */}
         {showServiceForm && (
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 mb-4 sm:mb-8 animate-fade-in">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 flex items-center gap-2">
+              <h2 className="text-lg sm:text-xl font-semibold text-green-600 flex items-center gap-2">
                 <span>➕</span> AGREGAR SERVICIO
               </h2>
               <button
@@ -1377,10 +1547,27 @@ const ServiciosEntidad = () => {
           </div>
         )}
 
-        {/* Services List */}
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6">
+        {/* Contenido basado en la pestaña activa */}
+        {activeTab === 'inicio' && (
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Bienvenido al Panel de Entidad</h2>
+            <p className="text-gray-600 mb-6">Selecciona una opción del menú superior o haz clic en las tarjetas para ver tus servicios y emergencias.</p>
+            <div className="flex justify-center gap-4">
+              <div onClick={() => setActiveTab('servicios')} className="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors cursor-pointer">
+                Ver Servicios
+              </div>
+              <div onClick={() => setActiveTab('emergencias')} className="bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition-colors cursor-pointer">
+                Ver Emergencias
+              </div>
+            </div>
+          </div>
+        )}
+        {activeTab === 'servicios' && (
+          <>
+          {/* Services List */}
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-semibold text-green-600 flex items-center gap-2">
               <span>🛠️</span> MIS SERVICIOS
             </h2>
             <button
@@ -1391,7 +1578,7 @@ const ServiciosEntidad = () => {
             </button>
           </div>
 
-          {servicios.length === 0 ? (
+          {servicios?.length === 0 ? (
             <div className="text-center py-8 sm:py-12">
               <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                 <span className="text-3xl sm:text-4xl">📭</span>
@@ -1437,6 +1624,136 @@ const ServiciosEntidad = () => {
             </div>
           )}
         </div>
+        </>
+        )}
+
+        {/* Todas las Emergencias - Vista completa como MIS SERVICIOS */}
+        {mostrarTodasEmergencias && (
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-green-600 flex items-center gap-2">
+                <span>🚨</span> MIS EMERGENCIAS
+              </h2>
+              <button
+                onClick={() => setMostrarTodasEmergencias(false)}
+                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all text-sm"
+              >
+                ← VOLVER
+              </button>
+            </div>
+
+            {todasEmergencias.length === 0 ? (
+              <div className="text-center py-8 sm:py-12">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <span className="text-3xl sm:text-4xl">✅</span>
+                </div>
+                <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base">No tienes emergencias asignadas</p>
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
+                {todasEmergencias.map((emergencia) => (
+                  <div key={emergencia.id} className={`border-2 rounded-lg sm:rounded-xl p-3 sm:p-5 ${emergencia.prioridad === 'URGENTE' ? 'border-red-500 bg-red-50' : emergencia.prioridad === 'NORMAL' ? 'border-gray-300 bg-gray-50' : 'border-blue-200 bg-blue-50'}`}>
+                    <div className="flex justify-between items-start mb-2 sm:mb-3">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${emergencia.prioridad === 'URGENTE' ? 'bg-red-500' : emergencia.prioridad === 'NORMAL' ? 'bg-gray-400' : 'bg-blue-400'}`}>
+                          <span className="text-sm sm:text-lg">🚨</span>
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">{emergencia.tipo}</h3>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${emergencia.estado === 'ATENDIDA' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                              {emergencia.estado}
+                            </span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${emergencia.prioridad === 'URGENTE' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-800'}`}>
+                              {emergencia.prioridad}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-gray-600 text-xs sm:text-sm line-clamp-2 mb-2">{emergencia.descripcion}</p>
+                    {emergencia.direccion && (
+                      <p className="text-gray-500 text-xs sm:text-sm mb-2">📍 {emergencia.direccion}</p>
+                    )}
+                    <div className="border-t border-gray-200 pt-2 mt-2">
+                      <p className="text-xs text-gray-500">Solicitante: {emergencia.usuarios?.nombre}</p>
+                      <p className="text-gray-400 text-xs">
+                        {new Date(emergencia.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'emergencias' && (
+          <>
+          {/* Emergencias List */}
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-green-600 flex items-center gap-2">
+                <span>🚨</span> MIS EMERGENCIAS
+              </h2>
+            </div>
+
+            {emergenciasAsignadas?.length === 0 ? (
+              <div className="text-center py-8 sm:py-12">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <span className="text-3xl sm:text-4xl">✅</span>
+                </div>
+                <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base">No tienes emergencias asignadas</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {emergenciasAsignadas?.map((emergencia) => (
+                  <div key={emergencia.id} className={`border-2 rounded-lg sm:rounded-xl p-3 sm:p-5 ${emergencia.prioridad === 'URGENTE' ? 'border-red-500 bg-red-50' : emergencia.prioridad === 'NORMAL' ? 'border-gray-300 bg-gray-50' : 'border-blue-200 bg-blue-50'}`}>
+                    <div className="flex justify-between items-start mb-2 sm:mb-3 flex-wrap gap-2">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${emergencia.prioridad === 'URGENTE' ? 'bg-red-500' : emergencia.prioridad === 'NORMAL' ? 'bg-gray-400' : 'bg-blue-400'}`}>
+                          <span className="text-sm sm:text-lg">🚨</span>
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">{emergencia.tipo}</h3>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${emergencia.estado === 'ATENDIDA' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                              {emergencia.estado}
+                            </span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${emergencia.prioridad === 'URGENTE' ? 'bg-red-600 text-white' : emergencia.prioridad === 'NORMAL' ? 'bg-gray-500 text-white' : 'bg-blue-500 text-white'}`}>
+                              {emergencia.prioridad}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-gray-600 text-xs sm:text-sm line-clamp-2 mb-2">{emergencia.descripcion}</p>
+                    {emergencia.direccion && (
+                      <p className="text-gray-500 text-xs sm:text-sm mb-2">📍 {emergencia.direccion}</p>
+                    )}
+                    <div className="border-t border-gray-200 pt-2 mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div>
+                        <p className="text-xs text-gray-500">Solicitante: {emergencia.usuarios?.nombre}</p>
+                        <p className="text-gray-400 text-xs">
+                          {new Date(emergencia.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                      {emergencia.estado !== 'ATENDIDA' && (
+                        <button
+                          onClick={() => handleAtender(emergencia.id)}
+                          className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 text-sm"
+                        >
+                          ✅ ATENDER
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          </>
+        )}
       </div>
     </div>
   )
@@ -1485,7 +1802,7 @@ const EvaluacionesEntidad = () => {
       <div className="max-w-7xl mx-auto px-4">
         <div className="bg-white rounded-xl shadow-md p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 mb-2">Calificación Promedio</h2>
-          <p className="text-4xl font-bold text-yellow-500">{promedio} ⭐</p>
+          <p className="text-4xl font-bold text-yellow-500">{promedio || 0} ⭐</p>
           <p className="text-gray-600">{calificaciones.length} evaluaciones</p>
         </div>
 

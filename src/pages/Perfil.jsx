@@ -97,8 +97,8 @@ const Perfil = () => {
                   )}
                   {userProfile?.tipo === 'ENTIDAD' && (
                     <>
-                      <Link to="/entidad/emergencias" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Emergencias</Link>
-                      <Link to="/entidad/servicios" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Servicios</Link>
+                      <Link to="/entidad" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Emergencias</Link>
+                      <Link to="/entidad" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Servicios</Link>
                       <Link to="/entidad/evaluaciones" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Evaluaciones</Link>
                     </>
                   )}
