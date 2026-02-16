@@ -429,7 +429,24 @@ const DashboardMigrante = () => {
           <div className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-red-600">🚨 Mis Emergencias</h2>
-              <button onClick={() => { setShowEmergenciasModal(false); setSelectedEmergencia(null); }} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => {
+                    // Refresh emergencias
+                    supabase
+                      .from('emergencias')
+                      .select('*, entidades(nombre)')
+                      .eq('usuario_id', user.id)
+                      .order('created_at', { ascending: false })
+                      .then(({ data }) => setMisEmergencias(data || []))
+                  }} 
+                  className="text-gray-500 hover:text-gray-700 text-xl"
+                  title="Actualizar"
+                >
+                  🔄
+                </button>
+                <button onClick={() => { setShowEmergenciasModal(false); setSelectedEmergencia(null); }} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+              </div>
             </div>
 
             {/* Botón nueva emergencia */}

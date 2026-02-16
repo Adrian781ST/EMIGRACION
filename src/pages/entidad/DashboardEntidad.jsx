@@ -578,7 +578,24 @@ const DashboardEntidad = () => {
           <div className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-red-600">🚨 Emergencias</h2>
-              <button onClick={() => { setShowEmergenciasModal(false); setSelectedEmergencia(null); }} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => {
+                    // Refresh emergencias
+                    supabase
+                      .from('emergencias')
+                      .select('*, usuarios(nombre, email)')
+                      .eq('entidad_id', userProfile?.id)
+                      .order('created_at', { ascending: false })
+                      .then(({ data }) => setEmergenciasData(data || []))
+                  }} 
+                  className="text-gray-500 hover:text-gray-700 text-xl"
+                  title="Actualizar"
+                >
+                  🔄
+                </button>
+                <button onClick={() => { setShowEmergenciasModal(false); setSelectedEmergencia(null); }} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+              </div>
             </div>
             
             {/* Chat - si hay emergencia seleccionada */}
