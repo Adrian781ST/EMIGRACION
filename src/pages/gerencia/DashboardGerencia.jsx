@@ -505,10 +505,10 @@ const EmergenciasAdmin = () => {
                 
                 <div className="flex sm:flex-col space-x-2 sm:space-x-0 sm:space-y-2 w-full sm:w-auto flex-shrink-0">
                   <button
-                    onClick={() => openAssignModal(emergencia)}
-                    className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-xs sm:text-sm flex-1 sm:flex-none"
+                    onClick={() => handleEliminar(emergencia.id)}
+                    className="bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 text-xs sm:text-sm flex-1 sm:flex-none"
                   >
-                    Asignar
+                    Eliminar
                   </button>
                   {emergencia.estado !== 'ATENDIDA' && (
                     <button
@@ -518,12 +518,6 @@ const EmergenciasAdmin = () => {
                       Atendida
                     </button>
                   )}
-                  <button
-                    onClick={() => handleEliminar(emergencia.id)}
-                    className="bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 text-xs sm:text-sm flex-1 sm:flex-none"
-                  >
-                    Eliminar
-                  </button>
                 </div>
               </div>
             </div>
