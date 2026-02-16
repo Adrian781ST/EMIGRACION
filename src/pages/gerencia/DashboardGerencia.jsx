@@ -360,6 +360,23 @@ const EmergenciasAdmin = () => {
     }
   }
 
+  const handleEliminar = async (id) => {
+    if (!confirm('¿Estás seguro de eliminar esta emergencia? Esta acción no se puede deshacer.')) return
+    
+    try {
+      const { error } = await supabase
+        .from('emergencias')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+      toast.success('Emergencia eliminada')
+      fetchEmergencias()
+    } catch (error) {
+      toast.error(error.message || 'Error al eliminar emergencia')
+    }
+  }
+
   const openAssignModal = (emergencia) => {
     setSelectedEmergencia(emergencia)
     setAsignarData({
@@ -501,6 +518,12 @@ const EmergenciasAdmin = () => {
                       Atendida
                     </button>
                   )}
+                  <button
+                    onClick={() => handleEliminar(emergencia.id)}
+                    className="bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 text-xs sm:text-sm flex-1 sm:flex-none"
+                  >
+                    Eliminar
+                  </button>
                 </div>
               </div>
             </div>
