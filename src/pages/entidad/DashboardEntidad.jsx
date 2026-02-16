@@ -580,15 +580,7 @@ const DashboardEntidad = () => {
               <h2 className="text-xl font-bold text-red-600">🚨 Emergencias</h2>
               <div className="flex items-center gap-2">
                 <button 
-                  onClick={() => {
-                    // Refresh emergencias
-                    supabase
-                      .from('emergencias')
-                      .select('*, usuarios(nombre, email)')
-                      .eq('entidad_id', userProfile?.id)
-                      .order('created_at', { ascending: false })
-                      .then(({ data }) => setEmergenciasData(data || []))
-                  }} 
+                  onClick={() => fetchAllData()} 
                   className="text-gray-500 hover:text-gray-700 text-xl"
                   title="Actualizar"
                 >
