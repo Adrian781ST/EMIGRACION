@@ -581,7 +581,7 @@ const DashboardEntidad = () => {
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => fetchAllData()} 
-                  className="text-gray-500 hover:text-gray-700 text-xl"
+                  className="text-red-500 hover:text-red-700 text-xl"
                   title="Actualizar"
                 >
                   🔄
