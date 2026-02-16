@@ -53,9 +53,8 @@ const Navbar = () => {
                 {/* Role-based links */}
                 {userProfile?.tipo === 'MIGRANTE' && (
                   <>
-                    <NavLink to="/migrante/emergencias">EMERGENCIAS</NavLink>
+                    <NavLink to="/migrante">PANEL</NavLink>
                     <NavLink to="/evaluanos">EXPERIENCIA</NavLink>
-                    <NavLink to="/migrante/novedades">NOVEDADES</NavLink>
                   </>
                 )}
                 {userProfile?.tipo === 'ENTIDAD' && (
@@ -140,14 +139,11 @@ const Navbar = () => {
                 <>
                   {userProfile?.tipo === 'MIGRANTE' && (
                     <>
-                      <Link to="/migrante/emergencias" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
-                        Emergencias
+                      <Link to="/migrante" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
+                        Panel
                       </Link>
                       <Link to="/evaluanos" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
                         Experiencia
-                      </Link>
-                      <Link to="/migrante/novedades" onClick={handleLinkClick} className="text-white/90 hover:text-white py-3 px-4 rounded-lg hover:bg-white/10 transition-colors font-medium uppercase text-sm">
-                        Novedades
                       </Link>
                     </>
                   )}

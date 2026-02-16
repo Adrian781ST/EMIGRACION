@@ -12,11 +12,9 @@ import ProtectedRoute from './components/ProtectedRoute'
 
 // Import Migrante components
 import DashboardMigrante from './pages/migrante/DashboardMigrante'
-import { EmergenciasMigrante, NovedadesPage } from './pages/migrante/DashboardMigrante'
 
 // Import Entidad components
 import DashboardEntidad from './pages/entidad/DashboardEntidad'
-import { EmergenciasEntidad, ServiciosEntidad, EvaluacionesEntidad, NovedadesEntidad } from './pages/entidad/DashboardEntidad'
 
 const AppRoutes = () => {
   const { userProfile, loading } = useAuth()
@@ -45,14 +43,14 @@ const AppRoutes = () => {
         } />
         
         {/* Rutas Migrante - Directas */}
-        <Route path="/migrante/emergencias" element={
+        <Route path="/migrante" element={
           <ProtectedRoute roles={['MIGRANTE']}>
-            <EmergenciasMigrante />
+            <DashboardMigrante />
           </ProtectedRoute>
         } />
-        <Route path="/migrante/novedades" element={
+        <Route path="/migrante/dashboard" element={
           <ProtectedRoute roles={['MIGRANTE']}>
-            <NovedadesPage />
+            <Navigate to="/migrante" replace />
           </ProtectedRoute>
         } />
         
@@ -79,12 +77,12 @@ const AppRoutes = () => {
         } />
         <Route path="/entidad/evaluaciones" element={
           <ProtectedRoute roles={['ENTIDAD']}>
-            <EvaluacionesEntidad />
+            <Navigate to="/entidad" replace />
           </ProtectedRoute>
         } />
         <Route path="/entidad/novedades" element={
           <ProtectedRoute roles={['ENTIDAD']}>
-            <NovedadesEntidad />
+            <Navigate to="/entidad" replace />
           </ProtectedRoute>
         } />
         

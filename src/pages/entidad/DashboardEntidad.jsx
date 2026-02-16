@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
@@ -141,94 +141,343 @@ const NovedadesEntidad = ({ hideVolver = false }) => {
 }
 
 const DashboardEntidad = () => {
-  const { userProfile } = useAuth()
+  const { userProfile, user } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
 
-  // Define default values to prevent ReferenceError
-  const servicios = []
-  const emergenciasAsignadas = []
-  const promedio = 0
-  const setActiveTab = () => {}
-  const navigate = () => {}
-  const fetchTodasEmergencias = () => {}
-  const fetchEvaluaciones = () => {}
-  const setShowEvaluacionesModal = () => {}
-  const setShowPerfilModal = () => {}
-  const setShowServiceForm = () => {}
+  // States for modals
+  const [showServiciosModal, setShowServiciosModal] = useState(false)
+  const [showEvaluacionesModal, setShowEvaluacionesModal] = useState(false)
+  const [showPerfilModal, setShowPerfilModal] = useState(false)
+  const [showEmergenciasModal, setShowEmergenciasModal] = useState(false)
+  const [showNovedadesModal, setShowNovedadesModal] = useState(false)
 
-  // Set active tab based on navigation state
+  // States for data
+  const [perfilData, setPerfilData] = useState(null)
+  const [serviciosData, setServiciosData] = useState([])
+  const [emergenciasData, setEmergenciasData] = useState([])
+  const [evaluacionesData, setEvaluacionesData] = useState([])
+  const [novedadesData, setNovedadesData] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [editandoPerfil, setEditandoPerfil] = useState(false)
+  const [perfilForm, setPerfilForm] = useState({})
+  
+  // Estados para chat de emergencias
+  const [selectedEmergencia, setSelectedEmergencia] = useState(null)
+  const [mensajes, setMensajes] = useState([])
+  const [nuevoMensaje, setNuevoMensaje] = useState('')
+  const chatContainerRef = useRef(null)
+
+  // Auto-scroll to bottom when mensajes change
   useEffect(() => {
-    if (location.state?.tab === 'emergencias') {
-      setActiveTab('emergencias')
-      if (typeof fetchTodasEmergencias === 'function') {
-        fetchTodasEmergencias()
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+    }
+  }, [mensajes])
+
+  // Real-time subscription for messages
+  useEffect(() => {
+    if (!selectedEmergencia) return
+
+    const channel = supabase
+      .channel('mensajes_emergencia')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'mensajes_emergencia',
+          filter: `emergencia_id=eq.${selectedEmergencia.id}`
+        },
+        (payload) => {
+          // Fetch the complete message with usuario info
+          supabase
+            .from('mensajes_emergencia')
+            .select('*, usuarios(nombre)')
+            .eq('id', payload.new.id)
+            .single()
+            .then(({ data }) => {
+              if (data) {
+                setMensajes(prev => [...prev, data])
+              }
+            })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [selectedEmergencia])
+  const [loadingMensajes, setLoadingMensajes] = useState(false)
+
+  // Fetch all data on mount
+  useEffect(() => {
+    fetchAllData()
+  }, [user])
+
+  // Real-time subscription for new emergencias
+  useEffect(() => {
+    let channel
+
+    const setupChannel = async () => {
+      if (!user) return
+      
+      // Get entity ID
+      const { data: entidadData } = await supabase
+        .from('entidades')
+        .select('id')
+        .eq('usuario_id', user.id)
+        .single()
+
+      if (!entidadData?.id) return
+
+      channel = supabase
+        .channel('emergencias_nuevas')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'emergencias',
+            filter: `entidad_id=eq.${entidadData.id}`
+          },
+          async (payload) => {
+            // Fetch complete emergencia with usuario info
+            const { data } = await supabase
+              .from('emergencias')
+              .select('*, usuarios(nombre, email)')
+              .eq('id', payload.new.id)
+              .single()
+            
+            if (data) {
+              setEmergenciasData(prev => [data, ...prev])
+              toast.success('🚨 Nueva emergencia recibida!', { 
+                duration: 5000,
+                style: { background: '#DC2626', color: '#fff' }
+              })
+            }
+          }
+        )
+        .subscribe()
+    }
+
+    setupChannel()
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel)
       }
-    } else if (location.state?.tab === 'servicios') {
-      setActiveTab('servicios')
     }
-    // Clear the state after reading it
-    if (location.state) {
-      window.history.replaceState({}, document.title)
-    }
-  }, [location])
+  }, [user])
 
-  const getSectorLabel = (tipo) => {
-    const labels = {
-      'SALUD': 'Salud',
-      'EDUCACION': 'Educación',
-      'LEGAL': 'Asesoría Legal',
-      'VIVIENDA': 'Vivienda',
-      'EMPLEO': 'Empleo',
-      'ALIMENTACION': 'Alimentación',
-      'OTROS': 'Otros Servicios'
+  // Refresh data when window gains focus
+  useEffect(() => {
+    const handleFocus = () => {
+      if (user) {
+        fetchAllData()
+      }
     }
-    return labels[tipo] || tipo
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [user])
+
+  const fetchAllData = async () => {
+    if (!user) return
+    setLoading(true)
+    try {
+      // Get entity data
+      const { data: entidadData } = await supabase
+        .from('entidades')
+        .select('*')
+        .eq('usuario_id', user.id)
+        .single()
+      
+      setPerfilData(entidadData)
+      setPerfilForm(entidadData || {})
+
+      if (entidadData) {
+        // Fetch servicios (tabla: servicios_entidad)
+        const { data: servicios } = await supabase
+          .from('servicios_entidad')
+          .select('*')
+          .eq('entidad_id', entidadData.id)
+          .eq('habilitado', true)
+        setServiciosData(servicios || [])
+
+        // Fetch emergencias - todas, sin filtro de estado
+        const { data: emergencias } = await supabase
+          .from('emergencias')
+          .select('*, usuarios(nombre, email)')
+          .eq('entidad_id', entidadData.id)
+          .order('created_at', { ascending: false })
+        setEmergenciasData(emergencias || [])
+
+        // Fetch calificaciones (tabla correcta)
+        const { data: calificaciones } = await supabase
+          .from('calificaciones')
+          .select('*, usuarios(nombre)')
+          .eq('entidad_id', entidadData.id)
+        setEvaluacionesData(calificaciones || [])
+      }
+
+      // Fetch Novedades (general, not entity-specific)
+      const { data: novedades } = await supabase
+        .from('novedades')
+        .select('*')
+        .eq('activa', true)
+        .order('created_at', { ascending: false })
+        .limit(20)
+      setNovedadesData(novedades || [])
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const getSectorIcon = (tipo) => {
-    const icons = {
-      'SALUD': '🏥',
-      'EDUCACION': '📚',
-      'LEGAL': '⚖️',
-      'VIVIENDA': '🏠',
-      'EMPLEO': '💼',
-      'ALIMENTACION': '🍽️',
-      'OTROS': '📋'
+  const handleGuardarPerfil = async () => {
+    try {
+      const { error } = await supabase
+        .from('entidades')
+        .update(perfilForm)
+        .eq('id', perfilData.id)
+       
+      if (error) throw error
+      setPerfilData(perfilForm)
+      setEditandoPerfil(false)
+      toast.success('Perfil actualizado correctamente')
+    } catch (error) {
+      toast.error('Error al actualizar perfil')
     }
-    return icons[tipo] || '📋'
   }
 
-  const getSectorColor = (tipo) => {
-    const colors = {
-      'SALUD': 'from-red-500 to-red-600',
-      'EDUCACION': 'from-blue-500 to-blue-600',
-      'LEGAL': 'from-gray-500 to-gray-600',
-      'VIVIENDA': 'from-orange-500 to-orange-600',
-      'EMPLEO': 'from-green-500 to-green-600',
-      'ALIMENTACION': 'from-yellow-500 to-yellow-600',
-      'OTROS': 'from-purple-500 to-purple-600'
+  // Atender emergencia - cambiar estado a EN_REVISION primero, luego a ATENDIDA
+  const handleAtenderEmergencia = async (emergenciaId, estadoActual) => {
+    try {
+      let nuevoEstado
+      if (estadoActual === 'PENDIENTE') {
+        nuevoEstado = 'EN_REVISION'
+      } else if (estadoActual === 'EN_REVISION') {
+        nuevoEstado = 'ATENDIDA'
+      } else {
+        return // No action for other states
+      }
+      
+      const { error } = await supabase
+        .from('emergencias')
+        .update({ 
+          estado: nuevoEstado,
+          fecha_atencion: nuevoEstado === 'ATENDIDA' ? new Date().toISOString() : null
+        })
+        .eq('id', emergenciaId)
+      
+      if (error) throw error
+      toast.success(nuevoEstado === 'EN_REVISION' ? 'Emergencia en revisión' : 'Emergencia marcada como atendida')
+      fetchAllData() // Recargar datos
+    } catch (error) {
+      toast.error('Error al actualizar emergencia')
     }
-    return colors[tipo] || 'from-gray-500 to-gray-600'
   }
 
-  const getTipoServicioIcon = (tipo) => {
-    const icons = {
-      'SALUD': '🏥',
-      'EDUCACION': '📚',
-      'LEGAL': '⚖️',
-      'VIVIENDA': '🏠',
-      'EMPLEO': '💼',
-      'ALIMENTACION': '🍽️',
-      'TRANSPORTE': '🚌',
-      'OTROS': '📋'
+  // Abrir chat de una emergencia
+  const handleAbrirChat = async (emergencia) => {
+    setSelectedEmergencia(emergencia)
+    setLoadingMensajes(true)
+    try {
+      // Obtener el estado más reciente de la emergencia
+      const { data: emergenciaActual } = await supabase
+        .from('emergencias')
+        .select('estado')
+        .eq('id', emergencia.id)
+        .single()
+      
+      const estadoActual = emergenciaActual?.estado || emergencia.estado
+      
+      // Si la emergencia está pendiente o asignada, cambiar a EN_REVISION
+      if (estadoActual === 'PENDIENTE' || estadoActual === 'ASIGNADA') {
+        await supabase
+          .from('emergencias')
+          .update({ estado: 'EN_REVISION' })
+          .eq('id', emergencia.id)
+        
+        // Enviar mensaje automático de notificación
+        await supabase.from('mensajes_emergencia').insert({
+          emergencia_id: emergencia.id,
+          usuario_id: user.id,
+          mensaje: '💬 La entidad ha iniciado la atención de tu emergencia. Estamos revisando tu caso.',
+          emisor: 'ENTIDAD',
+          es_notificacion: true
+        })
+        
+        toast.info('Emergencia ahora en revisión')
+        
+        // Actualizar el estado local
+        setSelectedEmergencia({...emergencia, estado: 'EN_REVISION'})
+      }
+      
+      const { data } = await supabase
+        .from('mensajes_emergencia')
+        .select('*, usuarios(nombre)')
+        .eq('emergencia_id', emergencia.id)
+        .order('created_at', { ascending: true })
+      setMensajes(data || [])
+    } catch (error) {
+      console.error('Error fetching mensajes:', error)
+    } finally {
+      setLoadingMensajes(false)
     }
-    return icons[tipo] || '📋'
+  }
+
+  // Enviar mensaje
+  const handleEnviarMensaje = async () => {
+    if (!nuevoMensaje.trim() || !selectedEmergencia) return
+    try {
+      // Obtener el estado más reciente de la emergencia
+      const { data: emergenciaActual } = await supabase
+        .from('emergencias')
+        .select('estado')
+        .eq('id', selectedEmergencia.id)
+        .single()
+      
+      const estadoActual = emergenciaActual?.estado || selectedEmergencia.estado
+      
+      // Si la emergencia está pendiente o asignada, cambiar a EN_REVISION
+      if (estadoActual === 'PENDIENTE' || estadoActual === 'ASIGNADA') {
+        await supabase
+          .from('emergencias')
+          .update({ estado: 'EN_REVISION' })
+          .eq('id', selectedEmergencia.id)
+        
+        // Enviar mensaje automático de notificación
+        await supabase.from('mensajes_emergencia').insert({
+          emergencia_id: selectedEmergencia.id,
+          usuario_id: user.id,
+          mensaje: '💬 La entidad ha iniciado la atención de tu emergencia. Estamos revisando tu caso.',
+          emisor: 'ENTIDAD',
+          es_notificacion: true
+        })
+      }
+      
+      const { error } = await supabase
+        .from('mensajes_emergencia')
+        .insert({
+          emergencia_id: selectedEmergencia.id,
+          usuario_id: user.id,
+          mensaje: nuevoMensaje,
+          emisor: 'ENTIDAD'
+        })
+      
+      if (error) throw error
+      setNuevoMensaje('')
+      // No necesitamos llamar handleAbrirChat porque el realtime subscription añade el mensaje automáticamente
+    } catch (error) {
+      toast.error('Error al enviar mensaje')
+    }
   }
 
   return (
     <div className="min-h-screen relative">
-      <StarFieldBackground />
-      
       {/* Overlay semitransparente para legibilidad */}
       <div className="absolute inset-0 bg-white/70 pointer-events-none z-10" />
       
@@ -246,51 +495,51 @@ const DashboardEntidad = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-          <div onClick={() => { setShowEmergenciasModal(true); }} className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow text-center cursor-pointer">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-8">
+          <div onClick={() => setShowEmergenciasModal(true)} className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow text-center cursor-pointer">
             <div className="flex flex-col items-center">
               <div className="w-12 sm:w-16 h-12 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mb-3">
                 <span className="text-2xl sm:text-3xl">🚨</span>
               </div>
               <div>
                 <h3 className="font-semibold text-green-600 uppercase text-sm sm:text-base">Emergencias</h3>
-                <p className="text-gray-600 text-xs sm:text-sm">{emergenciasAsignadas?.length || 0} pendientes</p>
+                <p className="text-gray-600 text-xs sm:text-sm">Pendientes</p>
               </div>
             </div>
           </div>
 
-          <div onClick={() => { setShowServiciosModal(true); }} className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow text-center cursor-pointer">
+          <div onClick={() => setShowServiciosModal(true)} className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow text-center cursor-pointer">
             <div className="flex flex-col items-center">
               <div className="w-12 sm:w-16 h-12 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mb-3">
                 <span className="text-2xl sm:text-3xl">🛠️</span>
               </div>
               <div>
                 <h3 className="font-semibold text-green-600 uppercase text-sm sm:text-base">Servicios</h3>
-                <p className="text-gray-600 text-xs sm:text-sm">{servicios?.length || 0} activos</p>
+                <p className="text-gray-600 text-xs sm:text-sm">Activos</p>
               </div>
             </div>
           </div>
 
-          <div onClick={() => { setShowEvaluacionesModal(true); }} className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow text-center cursor-pointer">
+          <div onClick={() => setShowEvaluacionesModal(true)} className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow text-center cursor-pointer">
             <div className="flex flex-col items-center">
               <div className="w-12 sm:w-16 h-12 sm:h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-3">
                 <span className="text-2xl sm:text-3xl">⭐</span>
               </div>
               <div>
                 <h3 className="font-semibold text-green-600 uppercase text-sm sm:text-base">Evaluaciones</h3>
-                <p className="text-gray-600 text-xs sm:text-sm">Ver calificaciones</p>
+                <p className="text-gray-600 text-xs sm:text-sm">Calificaciones</p>
               </div>
             </div>
           </div>
 
-          <div onClick={() => { setShowPerfilModal(true); }} className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow text-center cursor-pointer">
+          <div onClick={() => setShowPerfilModal(true)} className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow text-center cursor-pointer">
             <div className="flex flex-col items-center">
               <div className="w-12 sm:w-16 h-12 sm:h-16 bg-purple-100 rounded-full flex items-center justify-center mb-3">
                 <span className="text-2xl sm:text-3xl">👤</span>
               </div>
               <div>
                 <h3 className="font-semibold text-green-600 uppercase text-sm sm:text-base">Perfil</h3>
-                <p className="text-gray-600 text-xs sm:text-sm">Editar información</p>
+                <p className="text-gray-600 text-xs sm:text-sm">Información</p>
               </div>
             </div>
           </div>
@@ -305,21 +554,296 @@ const DashboardEntidad = () => {
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Estadísticas Rápidas</h2>
           <div className="grid grid-cols-3 md:grid-cols-3 gap-4">
             <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-gray-600 text-sm">Emergencias Pendientes</p>
-              <p className="text-3xl font-bold text-gray-800" id="pending-count">{emergenciasAsignadas?.length || 0}</p>
+              <p className="text-gray-600 text-sm">Emergencias</p>
+              <p className="text-3xl font-bold text-gray-800">{emergenciasData.length}</p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-gray-600 text-sm">Servicios Activos</p>
-              <p className="text-3xl font-bold text-gray-800" id="services-count">{servicios?.length || 0}</p>
+              <p className="text-gray-600 text-sm">Servicios</p>
+              <p className="text-3xl font-bold text-gray-800">{serviciosData.length}</p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-gray-600 text-sm">Calificación Promedio</p>
-              <p className="text-3xl font-bold text-gray-800" id="rating-avg">{promedio || 0} ⭐</p>
+              <p className="text-gray-600 text-sm">Calificación</p>
+              <p className="text-3xl font-bold text-gray-800">{evaluacionesData.length > 0 ? (evaluacionesData.reduce((a, b) => a + b.calificacion, 0) / evaluacionesData.length).toFixed(1) : '0'} ⭐</p>
             </div>
           </div>
         </div>
         </div>
       </div>
+
+      {/* ==================== MODALES ==================== */}
+      
+      {/* Modal Emergencias */}
+      {showEmergenciasModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => { setShowEmergenciasModal(false); setSelectedEmergencia(null); }}>
+          <div className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-red-600">🚨 Emergencias</h2>
+              <button onClick={() => { setShowEmergenciasModal(false); setSelectedEmergencia(null); }} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            
+            {/* Chat - si hay emergencia seleccionada */}
+            {selectedEmergencia ? (
+              <div className="border rounded-lg mb-4">
+                <div className="bg-gray-100 p-2 flex justify-between items-center">
+                  <span className="font-medium">Chat con Migrante</span>
+                  <button onClick={() => setSelectedEmergencia(null)} className="text-sm text-blue-600">← Volver</button>
+                </div>
+                <div ref={chatContainerRef} className="h-48 overflow-y-auto p-3 space-y-2 bg-white">
+                  {loadingMensajes ? (
+                    <p className="text-center text-gray-500">Cargando...</p>
+                  ) : mensajes.length === 0 ? (
+                    <p className="text-center text-gray-500">No hay mensajes. Inicia la conversación.</p>
+                  ) : (
+                    mensajes.map(msg => (
+                      msg.es_notificacion ? (
+                        <div key={msg.id} className="p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-center my-2">
+                          <p className="text-sm text-yellow-800">{msg.mensaje}</p>
+                          <p className="text-xs text-yellow-600">{new Date(msg.created_at).toLocaleString()}</p>
+                        </div>
+                      ) : (
+                        <div key={msg.id} className={`p-2 rounded-lg ${msg.emisor === 'ENTIDAD' ? 'bg-blue-100 ml-8' : 'bg-gray-100 mr-8'}`}>
+                          <p className="text-sm">{msg.mensaje}</p>
+                          <p className="text-xs text-gray-500">{new Date(msg.created_at).toLocaleString()}</p>
+                        </div>
+                      )
+                    ))
+                  )}
+                </div>
+                <div className="p-2 border-t flex gap-2">
+                  <input
+                    type="text"
+                    value={nuevoMensaje}
+                    onChange={e => setNuevoMensaje(e.target.value)}
+                    placeholder="Escribe un mensaje..."
+                    className="flex-1 border rounded px-3 py-1 text-sm"
+                    onKeyPress={e => e.key === 'Enter' && handleEnviarMensaje()}
+                  />
+                  <button onClick={handleEnviarMensaje} className="bg-blue-500 text-white px-3 py-1 rounded text-sm">Enviar</button>
+                </div>
+              </div>
+            ) : (
+              /* Lista de emergencias */
+              <>
+                {loading ? <p>Cargando...</p> : emergenciasData.length === 0 ? (
+                  <p className="text-gray-600">No hay emergencias registradas.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {emergenciasData.map(emp => (
+                      <div key={emp.id} className={`border rounded-lg p-3 ${emp.estado === 'ATENDIDA' ? 'bg-green-50' : emp.estado === 'EN_REVISION' ? 'bg-yellow-50' : 'bg-red-50'}`}>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium">{emp.descripcion}</p>
+                            <p className="text-sm text-gray-500">Tipo: {emp.tipo}</p>
+                            <p className="text-sm text-gray-500">Estado: <span className={`font-medium ${emp.estado === 'ATENDIDA' ? 'text-green-600' : emp.estado === 'EN_REVISION' ? 'text-yellow-600' : 'text-red-600'}`}>{emp.estado}</span></p>
+                            <p className="text-sm text-gray-500">Fecha: {new Date(emp.created_at).toLocaleDateString()}</p>
+                            {emp.usuarios && <p className="text-sm text-gray-500">Migrante: {emp.usuarios.nombre}</p>}
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            {emp.estado !== 'ATENDIDA' && (
+                              <button 
+                                onClick={() => handleAtenderEmergencia(emp.id, emp.estado)}
+                                className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600"
+                              >
+                                {emp.estado === 'EN_REVISION' ? '✓ Finalizar' : '✓ Atender'}
+                              </button>
+                            )}
+                            <button 
+                              onClick={() => handleAbrirChat(emp)}
+                              className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600"
+                            >
+                              💬 Chat
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal Servicios */}
+      {showServiciosModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowServiciosModal(false)}>
+          <div className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-blue-600">🛠️ Servicios</h2>
+              <button onClick={() => setShowServiciosModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            {loading ? <p>Cargando...</p> : serviciosData.length === 0 ? (
+              <p className="text-gray-600">No hay servicios activos.</p>
+            ) : (
+              <div className="space-y-3">
+                {serviciosData.map(serv => (
+                  <div key={serv.id} className="border rounded-lg p-3 bg-blue-50">
+                    <p className="font-medium">{serv.nombre}</p>
+                    <p className="text-sm text-gray-600">{serv.descripcion}</p>
+                    <p className="text-sm text-gray-500">Estado: {serv.estado}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal Evaluaciones */}
+      {showEvaluacionesModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowEvaluacionesModal(false)}>
+          <div className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-yellow-600">⭐ Evaluaciones</h2>
+              <button onClick={() => setShowEvaluacionesModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            {loading ? <p>Cargando...</p> : evaluacionesData.length === 0 ? (
+              <p className="text-gray-600">No hay evaluaciones.</p>
+            ) : (
+              <div className="space-y-3">
+                {evaluacionesData.map(eval_ => (
+                  <div key={eval_.id} className="border rounded-lg p-3 bg-yellow-50">
+                    <div className="flex justify-between">
+                      <p className="font-medium">Calificación: {eval_.calificacion}/5 ⭐</p>
+                    </div>
+                    <p className="text-sm text-gray-600">{eval_.comentario}</p>
+                    <p className="text-xs text-gray-500">{new Date(eval_.created_at).toLocaleDateString()}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal Novedades */}
+      {showNovedadesModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowNovedadesModal(false)}>
+          <div className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-cyan-600">📋 Novedades</h2>
+              <button onClick={() => setShowNovedadesModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            {loading ? <p>Cargando...</p> : novedadesData.length === 0 ? (
+              <p className="text-gray-600">No hay novedades.</p>
+            ) : (
+              <div className="space-y-3">
+                {novedadesData.map(novedad => (
+                  <div key={novedad.id} className={`p-4 rounded-lg border-l-4 ${
+                    novedad.tipo === 'ALERTA' ? 'bg-red-50 border-red-500' :
+                    novedad.tipo === 'EVENTO' ? 'bg-green-50 border-green-500' :
+                    'bg-blue-50 border-blue-500'
+                  }`}>
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded ${
+                        novedad.tipo === 'ALERTA' ? 'bg-red-100 text-red-800' :
+                        novedad.tipo === 'EVENTO' ? 'bg-green-100 text-green-800' :
+                        'bg-blue-100 text-blue-800'
+                      }`}>
+                        {novedad.tipo}
+                      </span>
+                    </div>
+                    <h3 className="font-medium text-gray-800">{novedad.titulo}</h3>
+                    <p className="text-gray-600 text-sm mt-1">{novedad.contenido}</p>
+                    <p className="text-gray-500 text-xs mt-2">
+                      {new Date(novedad.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal Perfil */}
+      {showPerfilModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowPerfilModal(false)}>
+          <div className="bg-white rounded-xl max-w-lg w-full p-6 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-purple-600">👤 Perfil</h2>
+              <button onClick={() => setShowPerfilModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            
+            {loading ? (
+              <p>Cargando...</p>
+            ) : editandoPerfil ? (
+              // Modo edición
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                  <input
+                    type="text"
+                    value={perfilForm?.nombre || ''}
+                    onChange={e => setPerfilForm({...perfilForm, nombre: e.target.value})}
+                    className="mt-1 block w-full border rounded-md p-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Tipo</label>
+                  <input
+                    type="text"
+                    value={perfilForm?.tipo || ''}
+                    onChange={e => setPerfilForm({...perfilForm, tipo: e.target.value})}
+                    className="mt-1 block w-full border rounded-md p-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Dirección</label>
+                  <input
+                    type="text"
+                    value={perfilForm?.direccion || ''}
+                    onChange={e => setPerfilForm({...perfilForm, direccion: e.target.value})}
+                    className="mt-1 block w-full border rounded-md p-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Teléfono</label>
+                  <input
+                    type="text"
+                    value={perfilForm?.telefono || ''}
+                    onChange={e => setPerfilForm({...perfilForm, telefono: e.target.value})}
+                    className="mt-1 block w-full border rounded-md p-2"
+                  />
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <button onClick={handleGuardarPerfil} className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Guardar</button>
+                  <button onClick={() => setEditandoPerfil(false)} className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
+                </div>
+              </div>
+            ) : (
+              // Modo visualización
+              <div className="space-y-3">
+                <div className="p-3 bg-gray-50 rounded">
+                  <p className="text-sm text-gray-500">Nombre</p>
+                  <p className="font-medium">{perfilData?.nombre || 'No definido'}</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded">
+                  <p className="text-sm text-gray-500">Tipo</p>
+                  <p className="font-medium">{perfilData?.tipo || 'No definido'}</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded">
+                  <p className="text-sm text-gray-500">Dirección</p>
+                  <p className="font-medium">{perfilData?.direccion || 'No definido'}</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded">
+                  <p className="text-sm text-gray-500">Teléfono</p>
+                  <p className="font-medium">{perfilData?.telefono || 'No definido'}</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded">
+                  <p className="text-sm text-gray-500">Email</p>
+                  <p className="font-medium">{user?.email}</p>
+                </div>
+                <button onClick={() => setEditandoPerfil(true)} className="w-full bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 mt-2">
+                  ✏️ Editar Perfil
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
@@ -370,41 +894,59 @@ const EmergenciasEntidad = () => {
     }
   }
 
-  const handleAtender = async (id) => {
+  const handleAtender = async (id, estadoActual) => {
     try {
+      let nuevoEstado
+      if (estadoActual === 'PENDIENTE') {
+        nuevoEstado = 'EN_REVISION'
+      } else if (estadoActual === 'EN_REVISION') {
+        nuevoEstado = 'ATENDIDA'
+      } else {
+        return
+      }
+      
       const { error } = await supabase
         .from('emergencias')
         .update({ 
-          estado: 'ATENDIDA',
-          fecha_atencion: new Date().toISOString()
+          estado: nuevoEstado,
+          fecha_atencion: nuevoEstado === 'ATENDIDA' ? new Date().toISOString() : null
         })
         .eq('id', id)
 
       if (error) throw error
 
-      toast.success('Emergencia marcada como atendida')
+      toast.success(nuevoEstado === 'EN_REVISION' ? 'Emergencia en revisión' : 'Emergencia marcada como atendida')
       fetchEmergencias()
     } catch (error) {
-      toast.error(error.message || 'Error al atender emergencia')
+      toast.error(error.message || 'Error al actualizar emergencia')
     }
   }
 
-  const handleAtenderDesdeModal = async (id) => {
+  const handleAtenderDesdeModal = async (id, estadoActual) => {
     try {
+      let nuevoEstado
+      if (estadoActual === 'PENDIENTE') {
+        nuevoEstado = 'EN_REVISION'
+      } else if (estadoActual === 'EN_REVISION') {
+        nuevoEstado = 'ATENDIDA'
+      } else {
+        return
+      }
+      
       const { error } = await supabase
         .from('emergencias')
         .update({ 
-          estado: 'ATENDIDA',
-          fecha_atencion: new Date().toISOString()
+          estado: nuevoEstado,
+          fecha_atencion: nuevoEstado === 'ATENDIDA' ? new Date().toISOString() : null
         })
         .eq('id', id)
 
       if (error) throw error
 
-      toast.success('Emergencia marcada como atendida')
+      toast.success(nuevoEstado === 'EN_REVISION' ? 'Emergencia en revisión' : 'Emergencia marcada como atendida')
       fetchTodasEmergencias()
     } catch (error) {
-      toast.error(error.message || 'Error al atender emergencia')
+      toast.error(error.message || 'Error al actualizar emergencia')
     }
   }
 
@@ -543,10 +1085,10 @@ const EmergenciasEntidad = () => {
                       Seguimiento
                     </button>
                     <button
-                      onClick={() => handleAtender(emergencia.id)}
+                      onClick={() => handleAtender(emergencia.id, emergencia.estado)}
                       className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 text-sm"
                     >
-                      Atendida
+                      {emergencia.estado === 'EN_REVISION' ? 'Finalizar' : 'Atender'}
                     </button>
                   </div>
                 </div>
@@ -1342,7 +1884,7 @@ const ServiciosEntidad = () => {
                       <div key={emergencia.id} className={`border-2 rounded-lg p-3 ${emergencia.prioridad === 'URGENTE' ? 'border-red-500 bg-red-50' : emergencia.prioridad === 'NORMAL' ? 'border-gray-300 bg-gray-50' : 'border-blue-200 bg-blue-50'}`}>
                         <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
                           <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded">{emergencia.tipo}</span>
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded ${emergencia.estado === 'ATENDIDA' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{emergencia.estado}</span>
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded ${emergencia.estado === 'ATENDIDA' ? 'bg-green-100 text-green-800' : emergencia.estado === 'EN_REVISION' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>{emergencia.estado}</span>
                           <span className={`text-xs font-medium px-2 py-0.5 rounded ${emergencia.prioridad === 'URGENTE' ? 'bg-red-600 text-white' : emergencia.prioridad === 'NORMAL' ? 'bg-gray-500 text-white' : 'bg-blue-500 text-white'}`}>{emergencia.prioridad}</span>
                         </div>
                         <p className="text-gray-800 text-sm mb-2">{emergencia.descripcion}</p>
@@ -1740,10 +2282,10 @@ const ServiciosEntidad = () => {
                       </div>
                       {emergencia.estado !== 'ATENDIDA' && (
                         <button
-                          onClick={() => handleAtender(emergencia.id)}
+                          onClick={() => handleAtender(emergencia.id, emergencia.estado)}
                           className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 text-sm"
                         >
-                          ✅ ATENDER
+                          {emergencia.estado === 'EN_REVISION' ? '✅ FINALIZAR' : '✅ ATENDER'}
                         </button>
                       )}
                     </div>

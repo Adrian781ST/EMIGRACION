@@ -94,18 +94,19 @@ const Home = () => {
           {user && userProfile?.tipo === 'MIGRANTE' && (
             <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4 mt-6">
               <Link
-                to="/migrante/emergencias"
+                to="/migrante"
                 className="bg-red-500 text-white px-6 py-4 rounded-lg text-lg font-semibold hover:bg-red-600 flex items-center justify-center space-x-2 shadow-lg uppercase"
               >
                 <span>🚨</span>
-                <span>Reportar Emergencia</span>
+                <span>Panel Migrante</span>
               </Link>
+
               <Link
-                to="/migrante/novedades"
+                to="/evaluanos"
                 className="bg-white text-blue-600 px-6 py-4 rounded-lg text-lg font-semibold hover:bg-blue-50 flex items-center justify-center space-x-2 shadow-lg uppercase"
               >
-                <span>📋</span>
-                <span>Ver Novedades</span>
+                <span>⭐</span>
+                <span>Evaluar Servicios</span>
               </Link>
             </div>
           )}

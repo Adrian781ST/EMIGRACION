@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS emergencias (
     tipo TEXT NOT NULL CHECK (tipo IN ('SALUD', 'LEGAL', 'VIVIENDA', 'ALIMENTACION', 'EMPLEO', 'OTROS')),
     descripcion TEXT NOT NULL,
     direccion TEXT,
-    estado TEXT DEFAULT 'PENDIENTE' CHECK (estado IN ('PENDIENTE', 'ASIGNADA', 'ATENDIDA', 'CANCELADA')),
+    estado TEXT DEFAULT 'PENDIENTE' CHECK (estado IN ('PENDIENTE', 'ASIGNADA', 'EN_REVISION', 'ATENDIDA', 'CANCELADA')),
     prioridad TEXT DEFAULT 'NORMAL' CHECK (prioridad IN ('BAJA', 'NORMAL', 'ALTA', 'URGENTE')),
     seguimiento TEXT,
     fecha_asignacion TIMESTAMP WITH TIME ZONE,
@@ -69,6 +69,17 @@ CREATE TABLE IF NOT EXISTS calificaciones (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
+-- Table: mensajes_emergencia (chat entre entidad y migrante)
+CREATE TABLE IF NOT EXISTS mensajes_emergencia (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    emergencia_id UUID REFERENCES emergencias(id) ON DELETE CASCADE,
+    usuario_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
+    mensaje TEXT NOT NULL,
+    emisor TEXT NOT NULL CHECK (emisor IN ('MIGRANTE', 'ENTIDAD')),
+    es_notificacion BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
 -- Table: novedades
 CREATE TABLE IF NOT EXISTS novedades (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -86,6 +97,7 @@ ALTER TABLE entidades ENABLE ROW LEVEL SECURITY;
 ALTER TABLE servicios_entidad ENABLE ROW LEVEL SECURITY;
 ALTER TABLE emergencias ENABLE ROW LEVEL SECURITY;
 ALTER TABLE calificaciones ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mensajes_emergencia ENABLE ROW LEVEL SECURITY;
 ALTER TABLE novedades ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for usuarios
@@ -137,6 +149,12 @@ CREATE POLICY "Entidades can update assigned emergencias" ON emergencias FOR UPD
 CREATE POLICY "Gerencia can manage all emergencias" ON emergencias FOR ALL USING (
     EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND tipo = 'GERENCIA')
 );
+
+-- RLS Policies for mensajes_emergencia (simplificado)
+DROP POLICY IF EXISTS "Anyone can view mensajes" ON mensajes_emergencia;
+DROP POLICY IF EXISTS "Anyone can insert mensajes" ON mensajes_emergencia;
+CREATE POLICY "Anyone can view mensajes" ON mensajes_emergencia FOR SELECT USING (true);
+CREATE POLICY "Anyone can insert mensajes" ON mensajes_emergencia FOR INSERT WITH CHECK (true);
 
 -- RLS Policies for calificaciones
 ALTER TABLE calificaciones ENABLE ROW LEVEL SECURITY;

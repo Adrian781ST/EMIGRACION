@@ -90,9 +90,8 @@ const Perfil = () => {
                 <div className="flex flex-wrap justify-center gap-2">
                   {userProfile?.tipo === 'MIGRANTE' && (
                     <>
-                      <Link to="/migrante/emergencias" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Emergencias</Link>
+                      <Link to="/migrante" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Panel</Link>
                       <Link to="/evaluanos" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Experiencia</Link>
-                      <Link to="/migrante/novedades" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Novedades</Link>
                     </>
                   )}
                   {userProfile?.tipo === 'ENTIDAD' && (
